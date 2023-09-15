@@ -16,7 +16,8 @@ const studentsRouter = require('./routes/Students');
 app.use('/students', studentsRouter);
 const cosoa_annRouter = require('./routes/COSOA_ANN');
 app.use('/cosoa_ann', cosoa_annRouter);
-
+const org_applicationRouter = require('./routes/Application_Docs');
+app.use('/org_application', org_applicationRouter);
 
 db.sequelize.sync().then(() => {
   app.listen(3001, () => {
