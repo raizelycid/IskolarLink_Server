@@ -21,6 +21,5 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true
         }
     });
-
     return Org_Application;
 };

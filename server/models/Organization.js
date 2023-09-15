@@ -54,6 +54,16 @@ module.exports = function(sequelize, DataTypes) {
             as: "org_application",
             onDelete: 'CASCADE'
         });
+        Organization.hasMany(models.Requirements, {
+            foreignKey: "orgId",
+            as: "requirements",
+            onDelete: 'CASCADE'
+        });
+        Organization.hasMany(models.Advisers, {
+            foreignKey: "orgId",
+            as: "advisers",
+            onDelete: 'CASCADE'
+        });
     };
     return Organization;
 }
