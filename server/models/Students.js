@@ -72,5 +72,24 @@ module.exports = (sequelize, DataTypes) => {
         }
     });
 
+    // Associate with User Model and Organization Model
+    Students.associate = (models) => {
+        Students.belongsTo(models.User, {
+            foreignKey: {
+                allowNull: false
+            }
+        });
+        Students.hasOne(models.Org_Application, {
+            foreignKey: {
+                allowNull: true
+            }
+        });
+        Students.hasOne(models.COSOA_Members, {
+            foreignKey: {
+                allowNull: true
+            }
+        });
+    };
+
     return Students;
 };
