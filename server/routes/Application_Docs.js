@@ -5,7 +5,6 @@ const {readFile,writeFile} = require('fs/promises');
 const fs = require('fs');
 
 
-
 router.post('/accreditation', async (req, res ) => {
     try {
         const {orgId} = req.body;
@@ -25,6 +24,7 @@ router.post('/accreditation', async (req, res ) => {
 });
 
 // Get the input and Id of the org
+/*
 async function createPDF(input,output){
     try{
         // Check if directory exists and create if not
@@ -55,5 +55,7 @@ async function createPDF(input,output){
     }
 }
 
-createPDF(`../templates/accreditation/AF001-TRACKER FORM.pdf`,`../org_applications/accreditation/${orgId}/AF001-TRACKER FORM.pdf`)
+createPDF(`../templates/accreditation/AF001-TRACKER FORM.pdf`,`../org_applications/accreditation/${orgId}/AF001-TRACKER FORM.pdf`)*/
+
+module.exports = router;
 

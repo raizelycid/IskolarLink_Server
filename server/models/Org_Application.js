@@ -1,5 +1,17 @@
 module.exports = (sequelize, DataTypes) => {
     const Org_Application = sequelize.define('Org_Application', {
+        cosoaId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        studentId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        orgId: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
         application_status: {
             type: DataTypes.STRING,
             allowNull: false
@@ -10,24 +22,5 @@ module.exports = (sequelize, DataTypes) => {
         }
     });
 
-    // Associate with Student Model and Organization Model
-    // Optional association with Student Model
-    Org_Application.associate = (models) => {
-        Org_Application.belongsTo(models.Organization, {
-            foreignKey: {
-                allowNull: false
-            }
-        });
-        Org_Application.belongsTo(models.Student, {
-            foreignKey: {
-                allowNull: true
-            }
-        });
-        Org_Application.hasOne(models.COSOA_Members, {
-            foreignKey: {
-                allowNull: true
-            }
-        });
-    };
     return Org_Application;
 };
