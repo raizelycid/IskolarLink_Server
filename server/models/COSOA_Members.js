@@ -4,19 +4,20 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false
         },
+
+        studentId : {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
     });
 
     // Associate with Student Model and Org_Application Model
     COSOA_Members.associate = (models) => {
-        COSOA_Members.belongsTo(models.Student, {
-            foreignKey: {
-                allowNull: true
-            }
-        });
-        COSOA_Members.belongsTo(models.Org_Application, {
-            foreignKey: {
-                allowNull: true
-            }
+        COSOA_Members.hasOne(models.Org_Application, {
+            foreignKey:"cosoaId",
+            as:"cosoa",
+            onDelete: 'CASCADE'
         });
     };
+    return COSOA_Members;
 };

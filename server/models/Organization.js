@@ -39,15 +39,20 @@ module.exports = function(sequelize, DataTypes) {
         membership_period: {
             type: DataTypes.BOOLEAN,
             allowNull: false
+        },
+
+        userId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
         }
     });
 
     // Associate with Org_Application Model
     Organization.associate = (models) => {
         Organization.hasMany(models.Org_Application, {
-            foreignKey: {
-                allowNull: false
-            }
+            foreignKey: "orgId",
+            as: "org_application",
+            onDelete: 'CASCADE'
         });
     };
     return Organization;
