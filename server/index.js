@@ -5,9 +5,16 @@ const app = express();
 const db = require('./models');
 
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
-app.use(cors());
+app.use(cors(
+  {
+    origin: ["http://localhost:3000"],
+    credentials: true
+  }
+));
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 const usersRouter = require('./routes/Users');
@@ -22,6 +29,10 @@ const orgRouter = require('./routes/Organization');
 app.use('/org', orgRouter);
 const org_appRouter = require('./routes/Org_Application');
 app.use('/org_app', org_appRouter);
+const adminRouter = require('./routes/Admin');
+app.use('/admin', adminRouter);
+const cosoaRouter = require('./routes/COSOA');
+app.use('/cosoa', cosoaRouter);
 
 db.sequelize.sync().then(() => {
   app.listen(3001, () => {
