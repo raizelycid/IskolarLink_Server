@@ -9,24 +9,62 @@ const validateToken = require('../middleware/AuthMiddleware');
 router.use(cookieParser());
 
 router.post('/register', async (req, res) => {
-    const { email, password, role } = req.body;
+    const { email, password, student_num,
+        student_Lname,
+        student_Fname,
+        student_Mname,
+        student_suffix,
+        department,
+        year_level } = req.body;
+
     try {
-        bcrypt.hash(password, 10).then((hash) => {
-            Users.create({
+        await bcrypt.hash(password, 10).then((hash) => {
+            const user = Users.create({
                 email: email,
                 password: hash,
-                role: role
+                role: 'student',
+            }).then((user) => {
+
+                const userId = user.id;
+                const student = Students.create({
+                    student_num: student_num,
+                    student_Lname: student_Lname,
+                    student_Fname: student_Fname,
+                    student_Mname: student_Mname,
+                    student_suffix: student_suffix,
+                    department: department,
+                    year_level: year_level,
+                    is_verified: false,
+                    is_cosoa: false,
+                    is_web_admin: false,
+                    userId: userId
+                });
             });
-            res.json(`User created!`);
+
+        res.json(`Student created!`);
         });
 
+        
+        
+
     } catch (err) {
-        res.json(err);
+        if (err.name === 'SequelizeUniqueConstraintError') {
+            res.json(`Student number already exists!`);
+        }else{
+            res.json(err);
+        }
     }
 });
 
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, keepLoggedIn } = req.body;
+    let expiry = "";
+    if (keepLoggedIn) {
+        expiry = '30d';
+    }else{
+        expiry = '1d';
+    }
+
     try {
         const user = await Users.findOne({
             where: {
@@ -39,18 +77,15 @@ router.post('/login', async (req, res) => {
                     userId: user.id
                 }
             });
-            console.log(student)
             bcrypt.compare(password, user.password).then((match) => {
                 if (match) {
                     if(user.role === "student"){
                         const name = student.student_Fname + " " + student.student_Lname;
-                        console.log(name)
-                        const accessToken = jwt.sign({ id: user.id, username: name, role: user.role, student_id: student.id, is_verified: student.is_verified, is_cosoa: student.is_cosoa, is_web_admin: student.is_web_admin }, 'spongebobsquarepants', { expiresIn: '1d' });
-
+                        const accessToken = jwt.sign({ id: user.id, username: name, role: user.role, student_id: student.id, is_verified: student.is_verified, is_cosoa: student.is_cosoa, is_web_admin: student.is_web_admin }, 'spongebobsquarepants', { expiresIn: expiry });
                         res.cookie("accessToken", accessToken, { httpOnly: true });
                         res.json(`Student logged in!`);
                     }else if(user.role === "organization"){
-                        const accessToken = jwt.sign({ id: user.id, email: user.email, role: user.role },'spongebobsquarepants');
+                        const accessToken = jwt.sign({ id: user.id, email: user.email, role: user.role },'spongebobsquarepants', { expiresIn: expiry });
                         res.cookie("accessToken", accessToken, { maxAge: 3600 * 24 * 30 * 1000, httpOnly: true });
                         res.json(`Organization logged in!`);
                     }else{
