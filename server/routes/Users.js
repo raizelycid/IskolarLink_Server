@@ -103,9 +103,21 @@ router.post('/login', async (req, res) => {
     }
 });
 
-router.get('/',validateToken, (req, res) => {
-    const {id, username, profile_picture, role, student_id} = req.decoded;
-    res.json({id: id, username: username, profile_picture: profile_picture, role: role, student_id: student_id});
+router.get('/', validateToken, async (req, res) => {
+    const { id, username, role, student_id, is_cosoa, is_web_admin } = req.decoded;
+    try {
+        const user = await Users.findOne({
+            where: {
+                id: id
+            }
+        });
+        const profile_picture = user.profile_picture;
+        console.log(is_cosoa)
+        res.json({ id: id, username: username, profile_picture: profile_picture, role: role, student_id: student_id, is_cosoa: is_cosoa, is_web_admin: is_web_admin });
+    } catch (err) {
+        console.log(err);
+        res.json(err);
+    }
 });
 
 router.post('/logout', validateToken, (req, res) => {

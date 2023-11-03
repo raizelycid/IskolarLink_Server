@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Students } = require('../models');
+const { Students, Users, Membership, Organization, Socials} = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
 const upload = require('express-fileupload');
 const { ExpressFileuploadValidator} = require('express-fileupload-validator');
@@ -14,51 +14,32 @@ const fileUploadValidator = new ExpressFileuploadValidator({
     maxFileSize: '600KB',
 }, {
     minCount: 'You must upload a file.',
-    maxCount: 'Tou can only upload 1 file',
+    maxCount: 'You can only upload 1 file',
     allowedExtensions: 'File must be in pdf',
     allowedMimetypes: 'File must be in pdf',
     minFileSize: 'File must be atleast 1KB',
     maxFileSize: 'File must not exceed 600KB',
 });
 
+const profilePicUploadValidator = new ExpressFileuploadValidator({
+    minCount: 1,
+    maxCount: 1,
+    allowedExtensions: ['png','jpg','jpeg'],
+    allowedMimeTypes: ['image/png','image/jpg','image/jpeg'],
+    minFileSize: '1KB',
+    maxFileSize: '3MB',
+}, {
+    minCount: 'You must upload a file.',
+    maxCount: 'You can only upload 1 file',
+    allowedExtensions: 'File must be in png, jpg, or jpeg',
+    allowedMimetypes: 'File must be in png, jpg, or jpeg',
+    minFileSize: 'File must be atleast 1KB',
+    maxFileSize: 'File must not exceed 3MB',
+});
+
+
 router.use(upload());
 
-
-// Create a student and pass userId as a foreign key
-router.post('/', async (req, res) => {
-    const {
-        student_num,
-        student_Lname,
-        student_Fname,
-        student_Mname,
-        student_suffix,
-        department,
-        year_level,
-        userId
-    } = req.body;
-    try {
-        const student = await Students.create({
-            student_num: student_num,
-            student_Lname: student_Lname,
-            student_Fname: student_Fname,
-            student_Mname: student_Mname,
-            student_suffix: student_suffix,
-            department: department,
-            year_level: year_level,
-            is_verified: false,
-            is_cosoa: false,
-            is_web_admin: false,
-            userId: userId
-        });
-        res.json(student);
-    } catch (err) {
-        if (err.name === 'SequelizeUniqueConstraintError') {
-            res.json(`Student number already exists!`);
-        }else{
-            res.json(err);
-        }
-    }
-});
 
 // Count all students
 router.get('/count', async (req, res) => {
@@ -82,6 +63,129 @@ router.post('/cor_upload',validateToken, async (req, res) => {
         cor.mv(`cor/${student_id}.pdf`);
         res.json(`COR submitted!`);
     } catch (err) {
+        res.json(err);
+    }
+});
+
+router.post('/edit_name', validateToken, async (req, res) => {
+    const {student_id} = req.decoded;
+    const {
+        student_Fname,
+        student_Mname,
+        student_Lname,
+        student_suffix,
+    } = req.body;
+
+    let thingsToUpdate = {};
+    
+    // If the value is not "" then add it to the object
+    if (student_Fname !== "") {
+        thingsToUpdate.student_Fname = student_Fname;
+    }
+    if (student_Mname !== "") {
+        thingsToUpdate.student_Mname = student_Mname;
+    }
+    if (student_Lname !== "") {
+        thingsToUpdate.student_Lname = student_Lname;
+    }
+
+    try {
+        await Students.update(thingsToUpdate, {
+            where: {
+                id: student_id,
+            },
+        });
+        res.json('Name updated!');
+    }catch (err) {
+        res.json(err);
+    }
+});
+
+router.post('/upload_profile_pic', validateToken, async (req, res) => {
+    if (!req.files || Object.keys(req.files).length === 0) {
+        return res.json('No files were uploaded.');
+    }
+    const {student_id} = req.decoded;
+    const {profile_pic} = req.files;
+    try {
+        profilePicUploadValidator.validate(profile_pic);
+        const fullPath = `public/images/${student_id}.png`;
+        profile_pic.mv(fullPath);
+        
+        await Users.update({profile_picture: `${student_id}.png`}, {
+            where: {
+                id: req.decoded.id,
+            },
+        });
+        res.json(`Profile picture uploaded!`);
+    } catch (err) {
+        res.json(err);
+    }
+});
+
+
+router.get('/affiliated_orgs', validateToken, async (req, res) => {
+    const {student_id} = req.decoded;
+    try{
+        const orgs = await Membership.findAll({
+            where: {
+                studentId: student_id,
+                status: "Accepted",
+            },
+        });
+
+        let orgNames = [];
+
+        for (let i = 0; i < orgs.length; i++) {
+            const org = await Organization.findOne({
+                where: {
+                    id: orgs[i].orgId,
+                },
+            });
+            
+            orgNames.push(org.org_name);
+        }   
+
+        res.json([orgs, orgNames]);
+    }catch(err){
+        res.json(err);
+    }
+});
+
+
+router.put('/update_socials', validateToken, async (req, res) => {
+    const {id} = req.decoded;
+    const {
+        facebook,
+        twitter,
+        instagram,
+        linkedin,
+    } = req.body;
+
+    let thingsToUpdate = {};
+
+    // If the value is not "" then add it to the object
+    if (facebook !== "") {
+        thingsToUpdate.facebook = facebook;
+    }
+    if (twitter !== "") {
+        thingsToUpdate.twitter = twitter;
+    }
+    if (instagram !== "") {
+        thingsToUpdate.instagram = instagram;
+    }
+    if (linkedin !== "") {
+        thingsToUpdate.linkedin = linkedin;
+    }
+
+    try{
+        await Socials.update(thingsToUpdate, {
+            where: {
+                userId: id,
+            },
+        });
+        res.json('Socials updated!');
+    }catch(err){
         res.json(err);
     }
 });

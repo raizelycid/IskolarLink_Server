@@ -7,6 +7,7 @@ const db = require('./models');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
+
 app.use(cors(
   {
     origin: ["http://localhost:3000"],
@@ -16,11 +17,14 @@ app.use(cors(
 app.use(express.json());
 app.use(cookieParser());
 
+app.use(express.static('public'));
+
+
 // Routes
 const usersRouter = require('./routes/Users');
 app.use('/auth', usersRouter);
 const studentsRouter = require('./routes/Students');
-app.use('/students', studentsRouter);
+app.use('/student', studentsRouter);
 const cosoa_annRouter = require('./routes/COSOA_ANN');
 app.use('/cosoa_ann', cosoa_annRouter);
 const org_appdocs = require('./routes/Application_Docs');
