@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Students, Users, Membership, Organization, Socials} = require('../models');
+const { Students, Users, Membership, Organization, Socials, Org_Application, Advisers} = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
 const upload = require('express-fileupload');
 const { ExpressFileuploadValidator} = require('express-fileupload-validator');
@@ -186,6 +186,56 @@ router.put('/update_socials', validateToken, async (req, res) => {
         });
         res.json('Socials updated!');
     }catch(err){
+        res.json(err);
+    }
+});
+
+router.get('/accreditation_status', validateToken, async (req, res) => {
+    const{id} = req.decoded;
+    try{
+        const org = await Organization.findOne({
+            where: {
+                userId: id,
+            },
+        });
+        if (org === null) {
+            console.log('No organization found!');
+            res.json({status: false});
+        } else {
+            res.json({status: true});
+        }
+    }
+    catch(err){
+        res.json(err);
+    }
+});
+
+router.get('/org_application_status', validateToken, async (req, res) => {
+    const {id, student_id} = req.decoded;
+    // get the latest application containing the user's id
+    try{
+        const org = await Organization.findOne({
+            where: {
+                userId: id,
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 1,
+        });
+        const org_app = await Org_Application.findOne({
+            where: {
+                orgId: org.id,
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 1,
+        });
+        const advisers = await Advisers.findAll({
+            where: {
+                orgId: org.id,
+            },
+        });
+        res.json({org_app, org, advisers});
+    }
+    catch(err){
         res.json(err);
     }
 });

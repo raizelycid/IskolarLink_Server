@@ -18,6 +18,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(express.static('public'));
+app.use(express.static('temp'));
 
 
 // Routes
@@ -37,6 +38,8 @@ const adminRouter = require('./routes/Admin');
 app.use('/admin', adminRouter);
 const cosoaRouter = require('./routes/COSOA');
 app.use('/cosoa', cosoaRouter);
+const menuRouter = require('./routes/Menu');
+app.use('/menu', menuRouter);
 
 db.sequelize.sync().then(() => {
   app.listen(3001, () => {
