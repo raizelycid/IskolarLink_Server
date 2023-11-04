@@ -4,9 +4,10 @@ const {PDFDocument} = require('pdf-lib');
 const {readFile,writeFile} = require('fs/promises');
 const fs = require('fs');
 const { Organization, Advisers } = require('../models');
+const validateToken = require('../middleware/AuthMiddleware');
 
 
-router.post('/accreditation', async (req, res ) => {
+router.post('/generate_AF001', async (req, res ) => {
     try {
         const {orgId} = req.body;
         const pdfDoc = await PDFDocument.load(await readFile(`../templates/accreditation/AF001-TRACKER FORM.pdf`));
@@ -51,39 +52,72 @@ router.post('/accreditation', async (req, res ) => {
     }
 });
 
-// Get the input and Id of the org
-/*
-async function createPDF(input,output){
-    try{
-        // Check if directory exists and create if not
-        if (!fs.existsSync(`../org_applications/accreditation/${orgId}`)){
-            fs.mkdirSync(`../org_applications/accreditation/${orgId}`);
-        }
-        const pdfDoc = await PDFDocument.load(await readFile(input));
-        let fieldNames = pdfDoc.getForm().getFields();
+router.post('/generate_AF001_temp', validateToken, async (req, res ) => {
+    try {
+        const {
+            orgName,
+            jurisdiction,
+            subjurisdiction,
+            orgType,
+            advisers,
+        } = req.body;
+        const pdfDoc = await PDFDocument.load(await readFile(`templates/accreditation/AF001-TRACKER FORM.pdf`));
+        const form = pdfDoc.getForm();
+        const fieldNames = form.getFields();
+        // Get the data from Organization table
+        // Set the data to the PDF
         fieldNames.forEach((field)=>{
             console.log(field.getName());
         })
-
-
-        const form = pdfDoc.getForm();
-        form.getTextField(fieldNames[0].getName()).setText('Hello World');
-        form.getTextField(fieldNames[1].getName()).setText('Hello World 2');
-        form.getTextField(fieldNames[2].getName()).setText('Hello World 3');
-        form.getTextField(fieldNames[3].getName()).setText('Hello World 4');
-        form.getTextField(fieldNames[4].getName()).setText('Hello World 5');
-        form.getTextField(fieldNames[5].getName()).setText('Hello World 6');
-
+        form.getTextField(fieldNames[0].getName()).setText(orgName);
+        form.getTextField(fieldNames[1].getName()).setText(jurisdiction);
+        form.getTextField(fieldNames[2].getName()).setText(subjurisdiction);
+        form.getTextField(fieldNames[3].getName()).setText(orgType);
+        form.getTextField(fieldNames[4].getName()).setText(advisers);
+        form.getTextField(fieldNames[5].getName()).setText(orgName);
+        
         const pdfBytes = await pdfDoc.save();
-
-        await writeFile(output,pdfBytes);
-
-    }catch(err){
+        await writeFile(`temp/${req.decoded.username} - AF001 (Tracker Form).pdf`,pdfBytes);
+        res.status(200).json({message: 'PDF created', filename: `${req.decoded.username} - AF001 (Tracker Form).pdf`});
+    } catch (err) {
         console.log(err);
+        res.status(500).json({message: 'Server Error'});
     }
-}
+});
 
-createPDF(`../templates/accreditation/AF001-TRACKER FORM.pdf`,`../org_applications/accreditation/${orgId}/AF001-TRACKER FORM.pdf`)*/
+router.post('/generate_AD009_temp', validateToken, async (req, res ) => {
+    try {
+        const {
+            orgName,
+            jurisdiction,
+            subjurisdiction,
+            orgType,
+            advisers,
+        } = req.body;
+        const pdfDoc = await PDFDocument.load(await readFile(`templates/accreditation/AD009-WAIVER OF RESPONSIBILITY.pdf`));
+        const form = pdfDoc.getForm();
+        const fieldNames = form.getFields();
+        // Get the data from Organization table
+        // Set the data to the PDF
+        fieldNames.forEach((field)=>{
+            console.log(field.getName());
+        })
+        form.getTextField(fieldNames[0].getName()).setText(orgName);
+        form.getTextField(fieldNames[1].getName()).setText(jurisdiction);
+        form.getTextField(fieldNames[2].getName()).setText(subjurisdiction);
+        form.getTextField(fieldNames[3].getName()).setText(orgType);
+        form.getTextField(fieldNames[4].getName()).setText(advisers);
+        
+        const pdfBytes = await pdfDoc.save();
+        await writeFile(`temp/${req.decoded.username} - AD009 (Waiver Form).pdf`,pdfBytes);
+        res.status(200).json({message: 'PDF created', filename: `${req.decoded.username} - AD009 (Waiver Form).pdf`});
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({message: 'Server Error'});
+    }
+});
+
 
 module.exports = router;
 
