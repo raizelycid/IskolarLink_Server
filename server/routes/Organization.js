@@ -33,15 +33,15 @@ const forms = ['AD001','AD002','AD003','AD004','AD004X','AD005','AD006','AD007',
 router.use(cookieParser());
 
 router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
-    const { org_name, jurisdiction, sub_jurisdiction, type, advisers} = req.body;
+    const { orgName, jurisdiction, subjurisdiction, orgType, advisers} = req.body;
     const { id, student_id } = req.decoded;
     try {
 
         const organization = await Organization.create({
-            org_name: org_name,
+            org_name: orgName,
             jurisdiction: jurisdiction,
-            subjurisdiction: sub_jurisdiction,
-            type: type,
+            subjurisdiction: subjurisdiction,
+            type: orgType,
             is_accredited: false,
             application_status: 'Accreditation',
             org_status: 'Pending',
@@ -57,42 +57,19 @@ router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
             application_status: 'Pending',
         });
 
+        // convert advisers to array
+        let advisers_array = advisers.split(',');
+        
         // Create Adviser for Each Adviser
-        for (let i = 0; i < advisers.length; i++){
+        for (let i = 0; i < advisers_array.length; i++){
             await Advisers.create({
-                adviser_name: advisers[i],
+                adviser_name: advisers_array[i],
                 orgId: orgId
             });
         }
         if (!fs.existsSync(`./org_applications/accreditation/${orgId}`)){
             fs.mkdirSync(`./org_applications/accreditation/${orgId}`);
         }
-
-        const pdfDoc = await PDFDocument.load(await readFile(`./templates/accreditation/AF001-TRACKER FORM.pdf`));
-        const form = pdfDoc.getForm();
-        const fieldNames = form.getFields();
-        let adviser_names = '';
-        for (let i = 0; i < advisers.length; i++){
-            adviser_names += advisers[i];
-            if (i != advisers.length - 1){
-                adviser_names += ', ';
-            }
-        }
-        form.getTextField(fieldNames[0].getName()).setText(org_name);
-        form.getTextField(fieldNames[1].getName()).setText(jurisdiction);
-        form.getTextField(fieldNames[2].getName()).setText(sub_jurisdiction);
-        form.getTextField(fieldNames[3].getName()).setText(type);
-        form.getTextField(fieldNames[4].getName()).setText(adviser_names);
-        form.getTextField(fieldNames[5].getName()).setText(org_name);
-
-        const pdfBytes = await pdfDoc.save();
-        await writeFile(`./org_applications/accreditation/${orgId}/AF001.pdf`,pdfBytes);
-
-        await Requirements.create({
-            orgId: orgId,
-            requirement_name: 'AF001',
-            requirement: `./org_applications/accreditation/${orgId}/AF001.pdf`,
-        });
 
         const files = req.files;
         if (!req.files || Object.keys(req.files).length === 0) {
@@ -109,6 +86,7 @@ router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
                 requirement: filePath,
             });
         }
+        console.log({request_body: req.body, request_files: req.files, request_decoded: req.decoded, organization: organization, org_application: org_application, advisers: advisers_array})
 
         res.json("Successfully created organization");
         
