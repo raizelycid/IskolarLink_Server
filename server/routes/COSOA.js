@@ -89,7 +89,7 @@ router.post('/ie2/:org_applicationId', validateToken, async (req, res) => {
             res.json(err);
         }
     }else{
-        res.json(`You are not authorized to update Org Applications!`);
+        res.json({error: `You are not authorized to update the Application!`});
     }
 });
 
@@ -124,7 +124,7 @@ router.post('/fe1/:org_applicationId', validateToken, async (req, res) => {
             res.json(err);
         }
     }else{
-        res.json(`You are not authorized to update Org Applications!`);
+        res.json({error: `You are not authorized to update the Application!`});
     }
 });
 
@@ -159,7 +159,7 @@ router.post('/fe2/:org_applicationId', validateToken, async (req, res) => {
             res.json(err);
         }
     }else{
-        res.json(`You are not authorized to update Org Applications!`);
+        res.json({error: `You are not authorized to update the Application!`});
     }
 });
 
@@ -272,7 +272,7 @@ router.post('/accredit/:org_applicationId', validateToken, async (req, res) => {
             res.json(err);
         }
     }else{
-        res.json(`You are not authorized to update Org Applications!`);
+        res.json({error: `You are not authorized to update the Application!`});
     }
 });
 
