@@ -122,6 +122,7 @@ router.get('/', validateToken, async (req, res) => {
 
 router.post('/logout', validateToken, (req, res) => {
     res.clearCookie('accessToken');
+    res.clearCookie('menuToken');
     return res.json('User logged out!');
 });
 module.exports = router;

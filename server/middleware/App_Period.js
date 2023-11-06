@@ -10,7 +10,7 @@ const checkPeriod = async (req, res, next) => {
     if (application_period === true){
         next();
     }else{
-        res.json(`Application Period is not active!`);
+        res.json({error: 'Application period is closed'});
     }
 }
 
