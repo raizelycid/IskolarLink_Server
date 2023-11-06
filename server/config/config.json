@@ -1,11 +1,11 @@
 {
   "development": {
     "username": "root",
-    "password": "midomicid0804!",
+    "password": "password123!",
     "database": "iskolarlink",
     "host": "localhost",
     "dialect": "mysql",
-    "port":"804"
+    "port":"3306"
   },
   "test": {
     "username": "root",
