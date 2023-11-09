@@ -43,6 +43,8 @@ const menuRouter = require('./routes/Menu');
 app.use('/menu', menuRouter);
 const cosoa_dashboardRouter = require('./routes/COSOA_Dashboard');
 app.use('/cosoa_dashboard', cosoa_dashboardRouter);
+const requirementRouter = require('./routes/Requirement');
+app.use('/requirement', requirementRouter);
 
 db.sequelize.sync().then(() => {
   app.listen(3001, () => {

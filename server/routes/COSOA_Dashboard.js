@@ -118,7 +118,7 @@ router.get('/get_org/:id', async ( req, res) => {
             });
     
             
-            res.json({org, organized_requirements, adviser_names, user, org_application});
+            res.json({org, organized_requirements, adviser_names, user, org_application, requirements});
         }else if(org.application_status === "Revalidation"){
             for(let i = 0; i < Rev_Forms.length; i++){
                 for(let j = 0; j < requirements.length; j++){
@@ -159,7 +159,7 @@ router.get('/get_org/:id', async ( req, res) => {
             });
     
             
-            res.json({org, organized_requirements, adviser_names, user, org_application});
+            res.json({org, organized_requirements, adviser_names, user, org_application, requirements});
         }else if(org.application_status === "Accredited" || org.application_status === "Revalidated"){
             res.json({error: "This organization is already accredited or revalidated."});
         }
