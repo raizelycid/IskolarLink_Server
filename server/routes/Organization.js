@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Organization, Org_Application, Advisers, Requirements } = require('../models');
+const { Organization, Org_Application, Advisers, Requirements, Users } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
 const cookieParser = require('cookie-parser');
 const checkPeriod = require('../middleware/App_Period');
@@ -219,6 +219,35 @@ router.post('/update_form/:org_id/:application_status', [validateToken, checkPer
         }
         
     }catch(err){
+        res.json(err);
+        console.log(err);
+    }
+});
+
+
+router.get('/show_accredited_orgs', async (req, res) => {
+    try{
+
+        // get the accredited orgs and the user details of the orgs use join
+        Organization.findAll({
+            include: [{
+                model: Users,
+                attributes: ['id', 'role', 'description', 'profile_picture'],
+                required: true,
+            }],
+            where: {
+                is_accredited: true,
+            }
+        }).then((orgs) => {
+            res.json(orgs);
+        }
+        ).catch((err) => {
+            res.json(err);
+            console.log(err);
+        });
+
+    }
+    catch(err){
         res.json(err);
         console.log(err);
     }

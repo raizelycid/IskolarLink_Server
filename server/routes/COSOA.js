@@ -244,7 +244,7 @@ router.post('/accredit/:org_applicationId', validateToken, async (req, res) => {
                     orgId: org_org_id,
                     application_status: 'Accredited'
                 })
-                await Organization.update({ socn: new_socn, application_status: 'Accredited', org_status: 'Active', is_accredited: true }, {
+                await Organization.update({ socn: new_socn, application_status: 'Accredited', org_status: 'Active', is_accredited: true, userId: null }, {
                     where: {
                         id: org_org_id
                     }

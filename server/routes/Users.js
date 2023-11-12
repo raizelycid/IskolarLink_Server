@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Users, Students } = require('../models');
+const { Users, Students, Organization } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -116,6 +116,35 @@ router.get('/', validateToken, async (req, res) => {
         res.json({ id: id, username: username, profile_picture: profile_picture, role: role, student_id: student_id, is_cosoa: is_cosoa, is_web_admin: is_web_admin });
     } catch (err) {
         console.log(err);
+        res.json(err);
+    }
+});
+
+
+router.post('/add_org/:org_id', validateToken, async (req, res) => {
+    const {email, password} = req.body;
+    const {org_id} = req.params;
+    try{
+        await bcrypt.hash(password, 10).then((hash) => {
+            const user = Users.create({
+                email: email,
+                password: hash,
+                role: 'organization',
+            }).then((user) => {
+                const userId = user.id;
+                Organization.update({
+                    userId: userId,
+                },{
+                    where: {
+                        id: org_id,
+                    }
+                });
+            });
+        });
+
+        
+        res.json('Organization created!');
+    }catch(err){
         res.json(err);
     }
 });
