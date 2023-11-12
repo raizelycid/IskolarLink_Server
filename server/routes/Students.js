@@ -221,6 +221,7 @@ router.get('/org_application_status', validateToken, async (req, res) => {
             order: [['createdAt', 'DESC']],
             limit: 1,
         });
+        console.log(org);
         const org_app = await Org_Application.findOne({
             where: {
                 orgId: org.id,
@@ -233,6 +234,7 @@ router.get('/org_application_status', validateToken, async (req, res) => {
                 orgId: org.id,
             },
         });
+        console.log({org_app, org, advisers});
         res.json({org_app, org, advisers});
     }
     catch(err){

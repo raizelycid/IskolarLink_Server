@@ -65,5 +65,12 @@ module.exports = function(sequelize, DataTypes) {
             onDelete: 'CASCADE'
         });
     };
+
+    Organization.associate = (models) => {
+        Organization.belongsTo(models.Users, {
+            foreignKey: "userId",
+            onDelete: 'CASCADE'
+        });
+    }
     return Organization;
 }
