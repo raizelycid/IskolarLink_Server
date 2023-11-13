@@ -19,6 +19,7 @@ app.use(cookieParser());
 
 app.use(express.static('public'));
 app.use(express.static('temp'));
+app.use(express.static('org_applications'));
 
 
 // Routes
@@ -40,6 +41,10 @@ const cosoaRouter = require('./routes/COSOA');
 app.use('/cosoa', cosoaRouter);
 const menuRouter = require('./routes/Menu');
 app.use('/menu', menuRouter);
+const cosoa_dashboardRouter = require('./routes/COSOA_Dashboard');
+app.use('/cosoa_dashboard', cosoa_dashboardRouter);
+const requirementRouter = require('./routes/Requirement');
+app.use('/requirement', requirementRouter);
 
 db.sequelize.sync().then(() => {
   app.listen(3001, () => {

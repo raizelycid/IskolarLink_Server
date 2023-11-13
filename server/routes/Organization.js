@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Organization, Org_Application, Advisers, Requirements } = require('../models');
+const { Organization, Org_Application, Advisers, Requirements, Users } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
 const cookieParser = require('cookie-parser');
 const checkPeriod = require('../middleware/App_Period');
@@ -86,9 +86,8 @@ router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
                 requirement: filePath,
             });
         }
-        console.log({request_body: req.body, request_files: req.files, request_decoded: req.decoded, organization: organization, org_application: org_application, advisers: advisers_array})
-
-        res.json("Successfully created organization");
+        console.log({request_body: req.body, request_files: req.files, request_decoded: req.decoded, organization: organization, org_application: org_application, advisers: advisers_array});
+        res.json({organization: organization});
         
     } catch (err) {
         res.json(err);
@@ -197,6 +196,63 @@ router.post('/revalidation/:orgId', [validateToken, checkPeriod], async (req, re
         console.log(err);
     }
 })
+
+
+router.post('/update_form/:org_id/:application_status', [validateToken, checkPeriod], async (req, res) => {
+    const { org_id, application_status } = req.params;
+    const file = req.files.file;
+    const {requirement_name} = req.body;
+    console.log(file)
+    console.log(requirement_name)
+    try{
+        if(application_status === 'Accreditation'){
+            fileUploadValidator.validate(file);
+            const filePath = `./org_applications/accreditation/${org_id}/${requirement_name}.pdf`;
+            fs.writeFile(filePath, file.data, (err) => {if(err){console.log(err)}console.log(filePath)});
+            res.json({message: 'Successfully updated form'})
+        }else if(application_status === 'Revalidation'){
+            console.log('Revalidation')
+            fileUploadValidator.validate(file);
+            const filePath = `./org_applications/revalidation/${org_id}/${requirement_name}.pdf`;
+            fs.writeFile(filePath, file.data, (err) => {if(err)console.log(err)});
+            res.json({message: 'Successfully updated form'});
+        }
+        
+    }catch(err){
+        res.json(err);
+        console.log(err);
+    }
+});
+
+
+router.get('/show_accredited_orgs', async (req, res) => {
+    try{
+
+        // get the accredited orgs and the user details of the orgs use join
+        Organization.findAll({
+            include: [{
+                model: Users,
+                attributes: ['id', 'role', 'description', 'profile_picture'],
+                required: true,
+            }],
+            where: {
+                is_accredited: true,
+            }
+        }).then((orgs) => {
+            res.json(orgs);
+        }
+        ).catch((err) => {
+            res.json(err);
+            console.log(err);
+        });
+
+    }
+    catch(err){
+        res.json(err);
+        console.log(err);
+    }
+});
+
 
 module.exports = router;
 

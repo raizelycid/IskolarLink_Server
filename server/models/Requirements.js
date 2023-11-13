@@ -12,6 +12,15 @@ module.exports = function(sequelize, DataTypes){
             type: DataTypes.STRING,
             allowNull: false
         },
+        status: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: "Pending"
+        },
+        remarks: {
+            type: DataTypes.STRING,
+            allowNull: true
+        }
     });
 
     return Requirements;
