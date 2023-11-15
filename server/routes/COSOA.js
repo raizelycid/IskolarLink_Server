@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { COSOA_Members, Org_Application, Organization, Application_Period } = require('../models');
+const { COSOA_Members, Org_Application, Organization, Application_Period, Requirements } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
 const { Op, Sequelize } = require('sequelize');
 
@@ -92,6 +92,66 @@ router.post('/ie2/:org_applicationId', validateToken, async (req, res) => {
         res.json({error: `You are not authorized to update the Application!`});
     }
 });
+
+router.post('/ie1/:org_applicationId/:requirementId', validateToken, async (req, res) => {
+    const { feedback } = req.body;
+    const cosoa_member = await COSOA_Members.findOne({
+        where: {
+            studentId: req.decoded.student_id
+        }
+    });
+    const pos = cosoa_member.position;
+    const cosoa_id = cosoa_member.id;
+    const { org_applicationId, requirementId } = req.params;
+    const org_application = await Org_Application.findOne({
+        where: {
+            id: org_applicationId
+        }
+    });
+    if (pos === 'Chairperson' || pos === 'Vice Chairperson' || pos === 'General Staff'){
+        try{
+            if(feedback){
+                await Requirements.update({
+                    status:'Revision',
+                    remarks: feedback
+                },{
+                    where: {
+                        id: requirementId
+                    }
+                });
+
+                await Org_Application.create({
+                    cosoaId: cosoa_id,
+                    studentId: org_application.studentId,
+                    orgId: org_application.orgId,
+                    application_status: 'IE1',
+                    feedback: 'Revision'
+                });
+                res.json(`Successfully returned the application with id ${org_applicationId}!`);
+            }else{
+                await Requirements.update({
+                    status:'Approved'
+                },{
+                    where: {
+                        id: requirementId
+                    }
+                })
+
+                await Org_Application.create({
+                    cosoaId: cosoa_id,
+                    studentId: org_application.studentId,
+                    orgId: org_application.orgId,
+                    application_status: 'IE1',
+                });
+
+                res.json(`Successfully approved the requirement with id ${requirementId}!`);
+            }
+            }catch(err){
+                res.json(err);
+            }
+        }
+    });
+
 
 // Update an Org_Application application_status to FE1
 router.post('/fe1/:org_applicationId', validateToken, async (req, res) => {
@@ -244,7 +304,7 @@ router.post('/accredit/:org_applicationId', validateToken, async (req, res) => {
                     orgId: org_org_id,
                     application_status: 'Accredited'
                 })
-                await Organization.update({ socn: new_socn, application_status: 'Accredited', org_status: 'Active', is_accredited: true, userId: null }, {
+                await Organization.update({ socn: new_socn, application_status: 'Accredited', org_status: 'Active', is_accredited: true}, {
                     where: {
                         id: org_org_id
                     }
