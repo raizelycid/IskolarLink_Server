@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const validateToken = require('../middleware/AuthMiddleware');
 
 router.use(cookieParser());
 
@@ -33,9 +34,11 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.get('/', async (req, res) => {
+router.get('/', validateToken, async (req, res) => {
     // Check if the cookie is present
     const menuToken = req.cookies.menuToken;
+    const {role} = req.decoded;
+    if(role ==='student'){
     if (!menuToken){
         // If the cookie is not present, create a new one
         let menu = "main";
@@ -54,6 +57,26 @@ router.get('/', async (req, res) => {
                 res.json({ menu: decoded.menu});
             }
         });
+    }}else if(role ==='organization'){
+        if (!menuToken){
+            // If the cookie is not present, create a new one
+            let menu = "org";
+            const menuCookies = jwt.sign({ menu: 'org' }, 'spongebobsquarepants', {
+                expiresIn: '1d'
+            });
+            res.cookie('menuToken', menuCookies, { httpOnly: true });
+            res.json({ menu: menu });
+        }else{
+            // If the cookie is present, get the menu
+            jwt.verify(menuToken, 'spongebobsquarepants', (err, decoded) => {
+                if(err){
+                    return res.json({ error: err });
+                }else{
+                    req.decoded = decoded;
+                    res.json({ menu: decoded.menu});
+                }
+            });
+        }
     }
 });
 

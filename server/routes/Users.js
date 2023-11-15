@@ -72,12 +72,24 @@ router.post('/login', async (req, res) => {
             }
         });
         if (user) {
-            const student = await Students.findOne({
+            let student = "";
+            let org = "";
+            if (user.role === 'student'){
+            const student_client = await Students.findOne({
                 where: {
                     userId: user.id
                 }
-            });
-            bcrypt.compare(password, user.password).then((match) => {
+            }).then((student_client) => {
+                student = student_client;});
+        }else if(user.role === 'organization'){
+            const org_client = await Organization.findOne({
+                where: {
+                    userId: user.id
+                }
+            }).then((org_client) => {
+                org = org_client;});
+        }
+            await bcrypt.compare(password, user.password).then((match) => {
                 if (match) {
                     if(user.role === "student"){
                         const name = student.student_Fname + " " + student.student_Lname;
@@ -85,9 +97,13 @@ router.post('/login', async (req, res) => {
                         res.cookie("accessToken", accessToken, { httpOnly: true });
                         res.json(`Student logged in!`);
                     }else if(user.role === "organization"){
-                        const accessToken = jwt.sign({ id: user.id, email: user.email, role: user.role },'spongebobsquarepants', { expiresIn: expiry });
+                        const accessToken = jwt.sign({ id: user.id, username: org.org_name, profile_picture: user.profile_picture, role: user.role },'spongebobsquarepants', { expiresIn: expiry });
                         res.cookie("accessToken", accessToken, { maxAge: 3600 * 24 * 30 * 1000, httpOnly: true });
-                        res.json(`Organization logged in!`);
+                        const menuCookies = jwt.sign({ menu: 'org' }, 'spongebobsquarepants', {
+                            expiresIn: '1d'
+                        });
+                        res.cookie('menuToken', menuCookies, { httpOnly: true });
+                        res.json({org: org});
                     }else{
                         res.json(`Wrong email or password!`);
                     }
@@ -121,9 +137,9 @@ router.get('/', validateToken, async (req, res) => {
 });
 
 
-router.post('/add_org/:org_id', validateToken, async (req, res) => {
+router.post('/add_org/:orgId', validateToken, async (req, res) => {
     const {email, password} = req.body;
-    const {org_id} = req.params;
+    const {orgId} = req.params;
     try{
         await bcrypt.hash(password, 10).then((hash) => {
             const user = Users.create({
@@ -136,7 +152,7 @@ router.post('/add_org/:org_id', validateToken, async (req, res) => {
                     userId: userId,
                 },{
                     where: {
-                        id: org_id,
+                        id: orgId,
                     }
                 });
             });
