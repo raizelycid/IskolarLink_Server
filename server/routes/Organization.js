@@ -35,6 +35,7 @@ router.use(cookieParser());
 router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
     const { orgName, jurisdiction, subjurisdiction, orgType, advisers} = req.body;
     const { id, student_id } = req.decoded;
+    const files = req.files;
     try {
 
         const organization = await Organization.create({
@@ -71,7 +72,7 @@ router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
             fs.mkdirSync(`./org_applications/accreditation/${orgId}`);
         }
 
-        const files = req.files;
+        
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.json('No files were uploaded.');
         }

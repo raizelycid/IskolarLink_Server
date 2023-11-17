@@ -73,6 +73,21 @@ router.post('/ie2/:org_applicationId', validateToken, async (req, res) => {
             id: req.params.org_applicationId
         }
     });
+    const reqs = await Requirements.findAll({
+        where: {
+            orgId: org_application.orgId
+        }
+    });
+    // if all the status of requirements is not 'Approved', then return an error
+    let isApproved = true;
+    for (let i = 0; i < reqs.length; i++){
+        if (reqs[i].status !== 'Approved'){
+            isApproved = false;
+        }
+    }
+    if (isApproved === false){
+        res.json({error: `Not all requirements are approved!`});
+    }else{
     const org_student_id = org_application.studentId;
     const org_org_id = org_application.orgId;
     if (pos === 'Chairperson' || pos === 'Vice Chairperson' || pos === 'General Staff'){
@@ -84,6 +99,15 @@ router.post('/ie2/:org_applicationId', validateToken, async (req, res) => {
                 orgId: org_org_id,
                 application_status: 'IE2'
             });
+
+            // Reset all the requirements' status to Pending
+            await Requirements.update({
+                status: 'Pending'
+            }, {
+                where: {
+                    orgId: org_org_id
+                }
+            });
             res.json(`Org Application with id ${org_applicationId} is now in Initial Evaluation 2!`);
         }catch(err){
             res.json(err);
@@ -91,6 +115,7 @@ router.post('/ie2/:org_applicationId', validateToken, async (req, res) => {
     }else{
         res.json({error: `You are not authorized to update the Application!`});
     }
+}
 });
 
 router.post('/ie1/:org_applicationId/:requirementId', validateToken, async (req, res) => {
@@ -119,7 +144,7 @@ router.post('/ie1/:org_applicationId/:requirementId', validateToken, async (req,
                         id: requirementId
                     }
                 });
-
+                if(org_application.feedback !== 'Revision'){
                 await Org_Application.create({
                     cosoaId: cosoa_id,
                     studentId: org_application.studentId,
@@ -127,6 +152,7 @@ router.post('/ie1/:org_applicationId/:requirementId', validateToken, async (req,
                     application_status: 'IE1',
                     feedback: 'Revision'
                 });
+                }
                 res.json(`Successfully returned the application with id ${org_applicationId}!`);
             }else{
                 await Requirements.update({
@@ -137,12 +163,76 @@ router.post('/ie1/:org_applicationId/:requirementId', validateToken, async (req,
                     }
                 })
 
+                if(org_application.application_status !== 'IE1'){
                 await Org_Application.create({
                     cosoaId: cosoa_id,
                     studentId: org_application.studentId,
                     orgId: org_application.orgId,
                     application_status: 'IE1',
                 });
+            }
+
+                res.json(`Successfully approved the requirement with id ${requirementId}!`);
+            }
+            }catch(err){
+                res.json(err);
+            }
+        }
+    });
+
+    router.post('/ie2/:org_applicationId/:requirementId', validateToken, async (req, res) => {
+    const { feedback } = req.body;
+    const cosoa_member = await COSOA_Members.findOne({
+        where: {
+            studentId: req.decoded.student_id
+        }
+    });
+    const pos = cosoa_member.position;
+    const cosoa_id = cosoa_member.id;
+    const { org_applicationId, requirementId } = req.params;
+    const org_application = await Org_Application.findOne({
+        where: {
+            id: org_applicationId
+        }
+    });
+    if (pos === 'Chairperson' || pos === 'Vice Chairperson' || pos === 'General Staff'){
+        try{
+            if(feedback){
+                await Requirements.update({
+                    status:'Revision',
+                    remarks: feedback
+                },{
+                    where: {
+                        id: requirementId
+                    }
+                });
+                if(org_application.feedback !== 'Revision'){
+                await Org_Application.create({
+                    cosoaId: cosoa_id,
+                    studentId: org_application.studentId,
+                    orgId: org_application.orgId,
+                    application_status: 'IE1',
+                    feedback: 'Revision'
+                });
+                }
+                res.json(`Successfully returned the application with id ${org_applicationId}!`);
+            }else{
+                await Requirements.update({
+                    status:'Approved'
+                },{
+                    where: {
+                        id: requirementId
+                    }
+                })
+
+                if(org_application.application_status !== 'IE1'){
+                await Org_Application.create({
+                    cosoaId: cosoa_id,
+                    studentId: org_application.studentId,
+                    orgId: org_application.orgId,
+                    application_status: 'IE1',
+                });
+            }
 
                 res.json(`Successfully approved the requirement with id ${requirementId}!`);
             }
@@ -168,6 +258,22 @@ router.post('/fe1/:org_applicationId', validateToken, async (req, res) => {
             id: req.params.org_applicationId
         }
     });
+
+    const reqs = await Requirements.findAll({
+        where: {
+            orgId: org_application.orgId
+        }
+    });
+    // if all the status of requirements is not 'Approved', then return an error
+    let isApproved = true;
+    for (let i = 0; i < reqs.length; i++){
+        if (reqs[i].status !== 'Approved'){
+            isApproved = false;
+        }
+    }
+    if (isApproved === false){
+        res.json({error: `Not all requirements are approved!`});
+    }else{
     const org_student_id = org_application.studentId;
     const org_org_id = org_application.orgId;
     if (pos === 'Chairperson' || pos === 'Vice Chairperson' || pos === 'Document Management'){
@@ -179,6 +285,13 @@ router.post('/fe1/:org_applicationId', validateToken, async (req, res) => {
                 orgId: org_org_id,
                 application_status: 'FE1'
             })
+            await Requirements.update({
+                status: 'Pending'
+            }, {
+                where: {
+                    orgId: org_org_id
+                }
+            });
             res.json(`Org Application with id ${org_applicationId} is now in Final Evaluation 1!`);
         }catch(err){
             res.json(err);
@@ -186,7 +299,61 @@ router.post('/fe1/:org_applicationId', validateToken, async (req, res) => {
     }else{
         res.json({error: `You are not authorized to update the Application!`});
     }
+}
 });
+
+router.post('/fe1/:org_applicationId/:requirementId', validateToken, async (req, res) => {
+    const { feedback } = req.body;
+    const cosoa_member = await COSOA_Members.findOne({
+        where: {
+            studentId: req.decoded.student_id
+        }
+    });
+    const pos = cosoa_member.position;
+    const cosoa_id = cosoa_member.id;
+    const { org_applicationId, requirementId } = req.params;
+    const org_application = await Org_Application.findOne({
+        where: {
+            id: org_applicationId
+        }
+    });
+    if (pos === 'Chairperson' || pos === 'Vice Chairperson' || pos === 'Document Management'){
+        try{
+            if(feedback){
+                await Requirements.update({
+                    status:'Revision',
+                    remarks: feedback
+                },{
+                    where: {
+                        id: requirementId
+                    }
+                });
+                if(org_application.feedback !== 'Revision'){
+                await Org_Application.create({
+                    cosoaId: cosoa_id,
+                    studentId: org_application.studentId,
+                    orgId: org_application.orgId,
+                    application_status: 'IE2',
+                    feedback: 'Revision'
+                });
+                }
+                res.json(`Successfully returned the application with id ${org_applicationId}!`);
+            }else{
+                await Requirements.update({
+                    status:'Approved'
+                },{
+                    where: {
+                        id: requirementId
+                    }
+                })
+
+                res.json(`Successfully approved the requirement with id ${requirementId}!`);
+            }
+            }catch(err){
+                res.json(err);
+            }
+        }
+    });
 
 // Update an Org_Application application_status to FE2
 router.post('/fe2/:org_applicationId', validateToken, async (req, res) => {
@@ -203,6 +370,22 @@ router.post('/fe2/:org_applicationId', validateToken, async (req, res) => {
             id: req.params.org_applicationId
         }
     });
+
+    const reqs = await Requirements.findAll({
+        where: {
+            orgId: org_application.orgId
+        }
+    });
+    // if all the status of requirements is not 'Approved', then return an error
+    let isApproved = true;
+    for (let i = 0; i < reqs.length; i++){
+        if (reqs[i].status !== 'Approved'){
+            isApproved = false;
+        }
+    }
+    if (isApproved === false){
+        res.json({error: `Not all requirements are approved!`});
+    }else{
     const org_student_id = org_application.studentId;
     const org_org_id = org_application.orgId;
     if (pos === 'Chairperson' || pos === 'Vice Chairperson' || pos === 'Vice Chairperson (Asst.)' || pos === 'Executive Director' || pos === 'External Affairs' || pos === 'Internal Affairs'){
@@ -214,6 +397,13 @@ router.post('/fe2/:org_applicationId', validateToken, async (req, res) => {
                 orgId: org_org_id,
                 application_status: 'FE2'
             });
+            await Requirements.update({
+                status: 'Pending'
+            }, {
+                where: {
+                    orgId: org_org_id
+                }
+            });
             res.json(`Org Application with id ${org_applicationId} is now in Final Evaluation 2!`);
         }catch(err){
             res.json(err);
@@ -221,7 +411,61 @@ router.post('/fe2/:org_applicationId', validateToken, async (req, res) => {
     }else{
         res.json({error: `You are not authorized to update the Application!`});
     }
+}
 });
+
+router.post('/fe2/:org_applicationId/:requirementId', validateToken, async (req, res) => {
+    const { feedback } = req.body;
+    const cosoa_member = await COSOA_Members.findOne({
+        where: {
+            studentId: req.decoded.student_id
+        }
+    });
+    const pos = cosoa_member.position;
+    const cosoa_id = cosoa_member.id;
+    const { org_applicationId, requirementId } = req.params;
+    const org_application = await Org_Application.findOne({
+        where: {
+            id: org_applicationId
+        }
+    });
+    if (pos === 'Chairperson' || pos === 'Vice Chairperson' || pos === 'Vice Chairperson (Asst.)' || pos === 'Executive Director' || pos === 'External Affairs' || pos === 'Internal Affairs'){
+        try{
+            if(feedback){
+                await Requirements.update({
+                    status:'Revision',
+                    remarks: feedback
+                },{
+                    where: {
+                        id: requirementId
+                    }
+                });
+                if(org_application.feedback !== 'Revision'){
+                await Org_Application.create({
+                    cosoaId: cosoa_id,
+                    studentId: org_application.studentId,
+                    orgId: org_application.orgId,
+                    application_status: 'FE1',
+                    feedback: 'Revision'
+                });
+                }
+                res.json(`Successfully returned the application with id ${org_applicationId}!`);
+            }else{
+                await Requirements.update({
+                    status:'Approved'
+                },{
+                    where: {
+                        id: requirementId
+                    }
+                })
+
+                res.json(`Successfully approved the requirement with id ${requirementId}!`);
+            }
+            }catch(err){
+                res.json(err);
+            }
+        }
+    });
 
 // Update an Org_Application application_status to Accredited/Revalidated
 router.post('/accredit/:org_applicationId', validateToken, async (req, res) => {
@@ -240,6 +484,22 @@ router.post('/accredit/:org_applicationId', validateToken, async (req, res) => {
             id: org_application.orgId
         }
     });
+
+    const reqs = await Requirements.findAll({
+        where: {
+            orgId: org_application.orgId
+        }
+    });
+    // if all the status of requirements is not 'Approved', then return an error
+    let isApproved = true;
+    for (let i = 0; i < reqs.length; i++){
+        if (reqs[i].status !== 'Approved'){
+            isApproved = false;
+        }
+    }
+    if (isApproved === false){
+        res.json({error: `Not all requirements are approved!`});
+    }else{
 
     let academic_year = new Date().getFullYear();
     let academic_year2 = new Date().getFullYear() + 1;
@@ -334,7 +594,61 @@ router.post('/accredit/:org_applicationId', validateToken, async (req, res) => {
     }else{
         res.json({error: `You are not authorized to update the Application!`});
     }
+}
 });
+
+router.post('/acc/:org_applicationId/:requirementId', validateToken, async (req, res) => {
+    const { feedback } = req.body;
+    const cosoa_member = await COSOA_Members.findOne({
+        where: {
+            studentId: req.decoded.student_id
+        }
+    });
+    const pos = cosoa_member.position;
+    const cosoa_id = cosoa_member.id;
+    const { org_applicationId, requirementId } = req.params;
+    const org_application = await Org_Application.findOne({
+        where: {
+            id: org_applicationId
+        }
+    });
+    if (pos === 'Chairperson' || pos === 'Chairperson (Asst.)'){
+        try{
+            if(feedback){
+                await Requirements.update({
+                    status:'Revision',
+                    remarks: feedback
+                },{
+                    where: {
+                        id: requirementId
+                    }
+                });
+                if(org_application.feedback !== 'Revision'){
+                await Org_Application.create({
+                    cosoaId: cosoa_id,
+                    studentId: org_application.studentId,
+                    orgId: org_application.orgId,
+                    application_status: 'FE2',
+                    feedback: 'Revision'
+                });
+                }
+                res.json(`Successfully returned the application with id ${org_applicationId}!`);
+            }else{
+                await Requirements.update({
+                    status:'Approved'
+                },{
+                    where: {
+                        id: requirementId
+                    }
+                })
+
+                res.json(`Successfully approved the requirement with id ${requirementId}!`);
+            }
+            }catch(err){
+                res.json(err);
+            }
+        }
+    });
 
 
 router.put('/application_period', validateToken, async (req, res) => {
