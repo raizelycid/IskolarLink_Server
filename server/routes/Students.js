@@ -268,6 +268,43 @@ router.post('/update_form/:org_id/:requirementId', [validateToken, checkPeriod],
             }
         });
 
+        // Check if there are no more requirements that are Pending and Revision. If there are none, then create an of org application with a feedback 'Revision Complete'
+        const org = await Organization.findOne({
+            where: {
+                id: org_id,
+            },
+        });
+        const requirements = await Requirements.findAll({
+            where: {
+                orgId: org_id,
+            },
+        });
+        const org_app = await Org_Application.findOne({
+            where: {
+                orgId: org_id,
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 1,
+        });
+        let pending = false;
+        let revision = false;
+        for(let i = 0; i < requirements.length; i++){
+            if(requirements[i].status === 'Pending'){
+                pending = true;
+            }
+            if(requirements[i].status === 'Revision'){
+                revision = true;
+            }
+        }
+        if(!pending && !revision){
+            await Org_Application.create({
+                orgId: org.id,
+                cosoaId: org_app.cosoaId,
+                studentId: org_app.studentId,
+                application_status: org_app.application_status,
+                feedback: 'Revision Complete',
+            });
+        }
 
         res.json({message: 'Successfully updated form'})
     }catch(err){
