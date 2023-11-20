@@ -41,6 +41,16 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         },
 
+        mission: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+
+        vision: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+
         userId: {
             type: DataTypes.INTEGER,
             allowNull: true
