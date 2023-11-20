@@ -9,9 +9,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false
         },
-        cosoa_ann_sub_title: {
+        cosoa_ann_link: {
             type: DataTypes.STRING,
-            allowNull: true
+            allowNull: false
         },
         cosoa_ann_body: {
             type: DataTypes.STRING,

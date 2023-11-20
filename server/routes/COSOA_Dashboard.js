@@ -15,20 +15,23 @@ router.get('/get_orgs', async (req, res) => {
                     id: orgs[i].userId
                 }
             });
+
+            
             if(user.role === "student"){
                 const student = await Students.findOne({
                     where: {
                         userId: user.id
                     }
                 });
-                orgs[i].dataValues.representative = student;
-                orgs[i].dataValues.representative.dataValues.photo = user.profile_picture;
-                // Combine student_Fname, student_Mname, student_Lname. Get only the first letter of the middle name
-                orgs[i].dataValues.representative.dataValues.username = `${student.student_Fname} ${student.student_Mname[0]}. ${student.student_Lname}`;
+                orgs[i].dataValues.representative = `${student.student_Fname} ${student.student_Mname[0]}. ${student.student_Lname}`;
+                orgs[i].dataValues.photo = user.profile_picture;
+                orgs[i].dataValues.role = user.role;
             }else{
                 orgs[i].dataValues.representative = orgs[i].org_name;
-                orgs[i].dataValues.representative.dataValues.photo = user.profile_picture;
+                orgs[i].dataValues.photo = user.profile_picture;
+                orgs[i].dataValues.role = user.role;
             }
+
             // Get the latest application of each organization and add it to the orgs array
             const org_application = await Org_Application.findOne({
                 where: {

@@ -1,28 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const { COSOA_ANN } = require('../models');
+const { COSOA_ANN, COSOA_Events } = require('../models');
 const multer = require('multer');
+const upload = require('express-fileupload');
+const fs = require('fs');
+const e = require('express');
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) =>{
-        return cb(null, './cosoa_announcements');
-    },
-    filename: (req, file, cb) =>{
-        return cb(null, `${file.fieldname}_${Date.now()}_${file.originalname}`);
-    }
-});
+router.use(upload());
 
-const upload = multer({ storage: storage });
 
-router.post('/', upload.single('cosoa_ann_photo'), async (req, res) => {
-    const { cosoa_ann_title, cosoa_ann_sub_title, cosoa_ann_body } = req.body;
+router.post('/', async (req, res) => {
+    const { cosoa_ann_title, cosoa_ann_link, cosoa_ann_body } = req.body;
+    const { cosoa_ann_photo } = req.files;
     try {
         const cosoa_ann = await COSOA_ANN.create({
-            cosoa_ann_photo: req.file.path,
+            cosoa_ann_photo: cosoa_ann_photo.name,
             cosoa_ann_title: cosoa_ann_title,
-            cosoa_ann_sub_title: cosoa_ann_sub_title,   
+            cosoa_ann_link: cosoa_ann_link,
             cosoa_ann_body: cosoa_ann_body
         });
+
+        const fullPath = `./public/cosoa_announcements/${cosoa_ann_photo.name}`;
+        cosoa_ann_photo.mv(fullPath);
+
         res.json(cosoa_ann);
     } catch (err) {
         res.json(err);
@@ -37,6 +37,36 @@ router.get('/', async (req, res) => {
             limit: 3
         });
         res.json(cosoa_ann);
+    } catch (err) {
+        res.json(err);
+    }
+});
+
+router.post('/add_event', async (req, res) => {
+    const {title, date, description, link} = req.body;
+    try {
+        const cosoa_event = await COSOA_Events.create({
+            title: title,
+            date: date,
+            description: description,
+            link: link
+        });
+        res.json(cosoa_event);
+    } catch (err) {
+        res.json(err);
+    }
+});
+
+
+//function to get all events
+router.get('/get_events', async (req, res) => {
+    try {
+        const cosoa_events = await COSOA_Events.findAll();
+        if(cosoa_events.length === 0) {
+            res.json({err: "No events found"});
+        }else{
+            res.json(cosoa_events);
+        }
     } catch (err) {
         res.json(err);
     }

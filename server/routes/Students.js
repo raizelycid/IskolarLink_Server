@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { Students, Users, Membership, Organization, Socials, Org_Application, Advisers} = require('../models');
+const { Students, Users, Membership, Organization, Socials, Org_Application, Advisers, Requirements} = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
 const upload = require('express-fileupload');
 const { ExpressFileuploadValidator} = require('express-fileupload-validator');
+const checkPeriod = require('../middleware/App_Period');
+const fs =require('fs');
+
 
 const fileUploadValidator = new ExpressFileuploadValidator({
     minCount: 1,
@@ -217,11 +220,8 @@ router.get('/org_application_status', validateToken, async (req, res) => {
         const org = await Organization.findOne({
             where: {
                 userId: id,
-            },
-            order: [['createdAt', 'DESC']],
-            limit: 1,
+            }
         });
-        console.log(org);
         const org_app = await Org_Application.findOne({
             where: {
                 orgId: org.id,
@@ -229,16 +229,87 @@ router.get('/org_application_status', validateToken, async (req, res) => {
             order: [['createdAt', 'DESC']],
             limit: 1,
         });
+
+        const requirements = await Requirements.findAll({
+            where: {
+                orgId: org.id,
+            },
+        });
         const advisers = await Advisers.findAll({
             where: {
                 orgId: org.id,
             },
         });
-        console.log({org_app, org, advisers});
-        res.json({org_app, org, advisers});
+
+        res.json({org_app, org, requirements, advisers});
     }
     catch(err){
         res.json(err);
+    }
+});
+
+
+router.post('/update_form/:org_id/:requirementId', [validateToken, checkPeriod], async (req, res) => {
+    const { org_id, requirementId } = req.params;
+    const file = req.files.file;
+    const {requirement_name} = req.body;
+    console.log(file)
+    console.log(requirement_name)
+    try{
+        fileUploadValidator.validate(file);
+        const filePath = `./org_applications/accreditation/${org_id}/${requirement_name}.pdf`;
+        fs.writeFile(filePath, file.data, (err) => {if(err){console.log(err)}console.log(filePath)});
+        await Requirements.update({
+            status: 'Revised',
+            feedback: '',
+        },{
+            where: {
+                id: requirementId,
+            }
+        });
+
+        // Check if there are no more requirements that are Pending and Revision. If there are none, then create an of org application with a feedback 'Revision Complete'
+        const org = await Organization.findOne({
+            where: {
+                id: org_id,
+            },
+        });
+        const requirements = await Requirements.findAll({
+            where: {
+                orgId: org_id,
+            },
+        });
+        const org_app = await Org_Application.findOne({
+            where: {
+                orgId: org_id,
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 1,
+        });
+        let pending = false;
+        let revision = false;
+        for(let i = 0; i < requirements.length; i++){
+            if(requirements[i].status === 'Pending'){
+                pending = true;
+            }
+            if(requirements[i].status === 'Revision'){
+                revision = true;
+            }
+        }
+        if(!pending && !revision){
+            await Org_Application.create({
+                orgId: org.id,
+                cosoaId: org_app.cosoaId,
+                studentId: org_app.studentId,
+                application_status: org_app.application_status,
+                feedback: 'Revision Complete',
+            });
+        }
+
+        res.json({message: 'Successfully updated form'})
+    }catch(err){
+        res.json(err);
+        console.log(err);
     }
 });
 
