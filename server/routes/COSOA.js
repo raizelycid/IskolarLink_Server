@@ -652,11 +652,18 @@ router.post('/acc/:org_applicationId/:requirementId', validateToken, async (req,
 
 
 router.put('/application_period', validateToken, async (req, res) => {
+    try{
+        if(!req.decoded.student_id){
+            res.json(`You are not authorized to update the Application Period!`)
+        }else{
     const cosoa_member = await COSOA_Members.findOne({
         where: {
             studentId: req.decoded.student_id
         }
     });
+    if(!cosoa_member){
+        res.json(`You are not authorized to update the Application Period!`)
+    }else{
     const application_period = await Application_Period.findOne({
         where: {
             id: 1
@@ -695,6 +702,11 @@ router.put('/application_period', validateToken, async (req, res) => {
     }else{
         res.json(`You are not authorized to update the Application Period!`);
     }
+}
+}
+}catch(err){
+    res.json(err);
+}
 });
 
 router.get('/test/:org_applicationId',async (req, res) => {
