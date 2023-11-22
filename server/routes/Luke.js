@@ -184,7 +184,6 @@ router.post('/accredit',async (req, res) => {
 
 
     let pos = 'Chairperson';
-
     let cosoa_id = "1";
     
     if (pos === 'Chairperson' || pos === 'Chairperson (Asst.)'){
