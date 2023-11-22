@@ -71,7 +71,9 @@ router.post('/login', async (req, res) => {
                 email: email
             }
         });
+        console.log(user)
         if (user) {
+            console.log("User found!")
             let student = "";
             let org = "";
             if (user.role === 'student'){
@@ -81,7 +83,8 @@ router.post('/login', async (req, res) => {
                 }
             }).then((student_client) => {
                 student = student_client;});
-        }else if(user.role === 'organization'){
+            }else if(user.role === 'organization'){
+            console.log("User found!")
             const org_client = await Organization.findOne({
                 where: {
                     userId: user.id

@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { Users, Students, Organization, Advisers, Org_Application } = require('../models');
+const { Users, Students, Organization, Advisers, Org_Application,Requirements } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const validateToken = require('../middleware/AuthMiddleware');
 const { Op, Sequelize } = require('sequelize');
+const fs = require('fs');
 
 router.post('/register', async (req, res) => {
     const students = req.body; // Expecting an array of students
@@ -50,10 +51,9 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.post('/addorg', validateToken, async (req, res) => {
+router.post('/addorg',async (req, res) => {
     const { orgName, jurisdiction, subjurisdiction, orgType, advisers, id, student_id} = req.body;
     try {
-
         const organization = await Organization.create({
             org_name: orgName,
             jurisdiction: jurisdiction,
@@ -98,7 +98,7 @@ router.post('/addorg', validateToken, async (req, res) => {
             });
         }
 
-        
+        res.json(`Organization ${orgName} created successfully!`);
         
     } catch (err) {
         res.json(err);
@@ -107,7 +107,7 @@ router.post('/addorg', validateToken, async (req, res) => {
 });
 
 
-router.post('/accredit', validateToken, async (req, res) => {
+router.post('/accredit',async (req, res) => {
     const { orgId} = req.body;
 
     //find the latest org_application of the org
@@ -182,20 +182,17 @@ router.post('/accredit', validateToken, async (req, res) => {
         new_socn = new_socn + '-' + 'U-WIDE';
     }
 
-    const cosoa_id = cosoa_member.id;
-    const org_student_id = org_application.studentId;
-    let pos = cosoa_member.position;
 
-    pos = 'Chairperson';
+    let pos = 'Chairperson';
+    let cosoa_id = "1";
     
     if (pos === 'Chairperson' || pos === 'Chairperson (Asst.)'){
         try{
-            console.log(org.application_status)
             // If org.application_status is Accreditation, update to Accredited else update to Revalidated
-            if (org.application_status === 'Accreditation'){
+            if (organization.application_status === 'Accreditation'){
                 await Org_Application.create({
                     cosoaId: cosoa_id,
-                    studentId: org_student_id,
+                    studentId: org_application.studentId,
                     orgId: org_id,
                     application_status: 'Accredited'
                 })
@@ -204,13 +201,13 @@ router.post('/accredit', validateToken, async (req, res) => {
                         id: org_id
                     }
                 });
-                res.json(`The organization ${org.org_name} is now accredited!`)
+                res.json(`The organization ${organization.org_name} is now accredited!`)
                 
-            }else if (org.application_status === 'Revalidation'){
+            }else if (organization.application_status === 'Revalidation'){
                 console.log('Revalidation')
                 await Org_Application.create({
                     cosoaId: cosoa_id,
-                    studentId: org_student_id,
+                    studentId: org_application.studentId,
                     orgId: org_id,
                     application_status: 'Revalidated'
                 })
@@ -219,7 +216,7 @@ router.post('/accredit', validateToken, async (req, res) => {
                         id: org_id
                     }
                 });
-                res.json(`The organization ${org.org_name} is now revalidated!`)
+                res.json(`The organization ${organization.org_name} is now revalidated!`)
             }
 
         }catch(err){

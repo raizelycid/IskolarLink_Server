@@ -43,12 +43,12 @@ module.exports = function(sequelize, DataTypes) {
 
         mission: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
 
         vision: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
 
         userId: {
