@@ -51,6 +51,8 @@ const org_portalRouter = require('./routes/Organization_Portal');
 app.use('/org_portal', org_portalRouter);
 const lukeRouter = require('./routes/Luke')
 app.use('/luke', lukeRouter )
+const studentPortalRouter = require('./routes/Student_Profile');
+app.use('/student_portal', studentPortalRouter);
 
 db.sequelize.sync().then(() => {
   app.listen(3001, () => {

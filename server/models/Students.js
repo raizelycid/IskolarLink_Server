@@ -84,6 +84,11 @@ module.exports = (sequelize, DataTypes) => {
             as: "cosoa_member",
             onDelete: 'CASCADE'
         });
+        Students.hasOne(models.Membership, {
+            foreignKey: "studentId",
+            as: "membership",
+            onDelete: 'CASCADE'
+        });
     };
 
     return Students;
