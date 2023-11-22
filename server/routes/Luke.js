@@ -51,7 +51,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.post('/addorg', validateToken, async (req, res) => {
+router.post('/addorg',async (req, res) => {
     const { orgName, jurisdiction, subjurisdiction, orgType, advisers, id, student_id} = req.body;
     try {
         const organization = await Organization.create({
@@ -107,7 +107,7 @@ router.post('/addorg', validateToken, async (req, res) => {
 });
 
 
-router.post('/accredit', validateToken, async (req, res) => {
+router.post('/accredit',async (req, res) => {
     const { orgId} = req.body;
 
     //find the latest org_application of the org
@@ -184,6 +184,7 @@ router.post('/accredit', validateToken, async (req, res) => {
 
 
     let pos = 'Chairperson';
+
     let cosoa_id = "1";
     
     if (pos === 'Chairperson' || pos === 'Chairperson (Asst.)'){
