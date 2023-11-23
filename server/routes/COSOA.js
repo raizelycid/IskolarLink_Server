@@ -651,6 +651,20 @@ router.post('/acc/:org_applicationId/:requirementId', validateToken, async (req,
     });
 
 
+router.get('/application_period', async (req, res) => {
+    try{
+        const application_period = await Application_Period.findOne({
+            where: {
+                id: 1
+            }
+        });
+        res.json(application_period);
+    }catch(err){
+        res.json(err);
+    }
+});
+
+
 router.put('/application_period', validateToken, async (req, res) => {
     try{
         if(!req.decoded.student_id){
@@ -687,14 +701,14 @@ router.put('/application_period', validateToken, async (req, res) => {
                         is_accredited: true
                     }
                 });
-                res.json(`Application Period updated to true!`);
+                res.json({success:`Application Period updated to true!`, period: true});
             }else if (period === true){
                 await Application_Period.update({ application_period: false }, {
                     where: {
                         id: 1
                     }
                 });
-                res.json(`Application Period updated to false!`);
+                res.json({success:`Application Period updated to false!`, period: false});
             }
         }catch(err){
             res.json(err);

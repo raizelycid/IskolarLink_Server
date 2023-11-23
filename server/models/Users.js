@@ -38,6 +38,12 @@ module.exports = (sequelize, DataTypes) => {
             as: 'organization',
             onDelete: 'CASCADE'
         });
+
+        Users.hasMany(models.Org_Announcement, {
+            foreignKey: 'orgId',
+            as: 'organization_announcements',
+            onDelete: 'CASCADE'
+        });
     };
     return Users;
 };
