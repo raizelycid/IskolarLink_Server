@@ -20,6 +20,7 @@ app.use(cookieParser());
 app.use(express.static('public'));
 app.use(express.static('temp'));
 app.use(express.static('org_applications'));
+app.use(express.static('cor'))
 
 
 // Routes
