@@ -21,6 +21,7 @@ app.use(express.static('public'));
 app.use(express.static('temp'));
 app.use(express.static('org_applications'));
 app.use(express.static('cor'))
+app.use(express.static('templates'));
 
 
 // Routes
@@ -54,6 +55,8 @@ const lukeRouter = require('./routes/Luke')
 app.use('/luke', lukeRouter )
 const studentPortalRouter = require('./routes/Student_Profile');
 app.use('/student_portal', studentPortalRouter);
+const accreditedOrgRouter = require('./routes/AccreditedOrg');
+app.use('/accredited/org', accreditedOrgRouter);
 
 db.sequelize.sync().then(() => {
   app.listen(3001, () => {

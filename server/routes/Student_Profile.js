@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Organization, Org_Application, Advisers, Requirements, Users, Students, Socials } = require('../models');
+const { Organization, Org_Application, Advisers, Requirements, Users, Students, Socials, Membership} = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
 const checkPeriod = require('../middleware/App_Period');
 const fs =require('fs');
 const upload = require('express-fileupload');
-const {readFile,writeFile} = require('fs/promises');
 const bcrpyt = require('bcrypt');
 const cookieParser = require('cookie-parser');
 
@@ -29,13 +28,55 @@ router.get('/', validateToken, async (req, res) => {
             where: { userId: id }
         });
 
+        // find all memberships where status is Accepted
+        const memberships = await Membership.findAll({
+            where: {
+                studentId: student_id,
+                status: 'Accepted'
+            }
+        });
+
+        
+        // find all orgs where the student is a member. get only the org_name and id attribute
+        const orgs = await Organization.findAll({
+            attributes: ['org_name', 'userId'],
+            where: {
+                id: memberships.map((membership) => {
+                    return membership.orgId;
+                })
+            }
+        });
+
+
+        // get only the profile_picture and description attribute from the user table
+        const orgInfo = await Users.findAll({
+            attributes: ['profile_picture', 'description'],
+            where: {
+                id: orgs.map((org) => {
+                    return org.userId;
+                })
+            }
+        });
+
+        console.log(orgInfo)
+
+
         student.dataValues.email = email.dataValues.email;
         student.dataValues.description = email.dataValues.description;
         student.dataValues.profile_picture = email.dataValues.profile_picture;
+        if(socials){
         student.dataValues.facebook = socials.dataValues.facebook;
         student.dataValues.twitter = socials.dataValues.twitter;
         student.dataValues.instagram = socials.dataValues.instagram;
         student.dataValues.linkedin = socials.dataValues.linkedin;
+        }
+        if(orgs){
+        student.dataValues.orgs = orgs;
+        student.dataValues.orgs.map((org, index) => {
+            org.dataValues.profile_picture = orgInfo[index].dataValues.profile_picture;
+            org.dataValues.description = orgInfo[index].dataValues.description;
+        });
+        }
 
         res.json(student);
 
