@@ -51,6 +51,11 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: true
         },
 
+        strict: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false
+        },
+
         userId: {
             type: DataTypes.INTEGER,
             allowNull: true
@@ -72,6 +77,11 @@ module.exports = function(sequelize, DataTypes) {
         Organization.hasMany(models.Advisers, {
             foreignKey: "orgId",
             as: "advisers",
+            onDelete: 'CASCADE'
+        });
+        Organization.hasMany(models.Membership, {
+            foreignKey: "orgId",
+            as: "membership",
             onDelete: 'CASCADE'
         });
     };
