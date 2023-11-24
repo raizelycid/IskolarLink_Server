@@ -60,6 +60,9 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     const { email, password, keepLoggedIn } = req.body;
+    console.log(email)
+    console.log(password)
+    console.log(keepLoggedIn)
     let expiry = "";
     if (keepLoggedIn) {
         expiry = '30d';
