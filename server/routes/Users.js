@@ -9,6 +9,13 @@ const cors = require('cors');
 
 router.use(cookieParser());
 
+router.use(cors({
+    origin: 'https://iskolarlink.netlify.app',
+    credentials: true,
+    sameSite: 'none',
+    secure: true
+}));
+
 
 router.post('/register', async (req, res) => {
     const { email, password, student_num,
@@ -104,7 +111,7 @@ router.post('/login', async (req, res) => {
                     if(user.role === "student"){
                         const name = student.student_Fname + " " + student.student_Lname;
                         const accessToken = jwt.sign({ id: user.id, username: name, role: user.role, student_id: student.id, is_verified: student.is_verified, is_cosoa: student.is_cosoa, is_web_admin: student.is_web_admin }, 'spongebobsquarepants', { expiresIn: expiry });
-                        res.cookie("accessToken", accessToken, { httpOnly: true });
+                        res.cookie("accessToken", accessToken, { httpOnly: true, sameSite: 'none', secure: true });
                         res.json(`Student logged in!`);
                     }else if(user.role === "organization"){
                         const accessToken = jwt.sign({ id: user.id, username: org.org_name, profile_picture: user.profile_picture, role: user.role },'spongebobsquarepants', { expiresIn: expiry });
@@ -112,7 +119,7 @@ router.post('/login', async (req, res) => {
                         const menuCookies = jwt.sign({ menu: 'org' }, 'spongebobsquarepants', {
                             expiresIn: '1d'
                         });
-                        res.cookie('menuToken', menuCookies, { httpOnly: true });
+                        res.cookie('menuToken', menuCookies, { httpOnly: true, sameSite: 'none', secure: true });
                         res.json({org: org});
                     }else{
                         res.json(`Wrong email or password!`);
