@@ -172,6 +172,11 @@ router.post('/update_profile', validateToken, async (req, res) => {
             }
         });
 
+        console.log(facebook)
+        console.log(twitter)
+        console.log(instagram)
+        console.log(linkedin)
+
         if(socials){
             await Socials.update({
                 facebook: facebook,
@@ -193,7 +198,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
             });
         }
 
-        res.json('Successfully updated profile');
+        res.json({success:'Successfully updated profile'});
 
         }catch(err){
             res.json(err);
