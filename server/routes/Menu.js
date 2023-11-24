@@ -3,8 +3,16 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const validateToken = require('../middleware/AuthMiddleware');
+const cors = require('cors');
 
 router.use(cookieParser());
+
+router.use(cors({
+    origin: 'https://iskolarlink.netlify.app',
+    credentials: true,
+    sameSite: 'none',
+    secure: true
+}));
 
 router.post('/', async (req, res) => {
     const { menu } = req.body;
@@ -15,7 +23,7 @@ router.post('/', async (req, res) => {
         const menuToken = jwt.sign({ menu: menu }, 'spongebobsquarepants', {
             expiresIn: '1d'
         });
-        res.cookie('menuToken', menuToken, { httpOnly: true });
+        res.cookie('menuToken', menuToken, { httpOnly: true, sameSite: 'none', secure: true });
         res.json({ menu: menu });
     }
     else{
@@ -27,7 +35,7 @@ router.post('/', async (req, res) => {
                 const menuToken = jwt.sign({ menu: menu }, 'spongebobsquarepants', {
                     expiresIn: '1d'
                 });
-                res.cookie('menuToken', menuToken, { httpOnly: true });
+                res.cookie('menuToken', menuToken, { httpOnly: true, sameSite: 'none', secure: true });
                 res.json({ menu: menu });
             }
         });
@@ -45,7 +53,7 @@ router.get('/', validateToken, async (req, res) => {
         const menuCookies = jwt.sign({ menu: 'main' }, 'spongebobsquarepants', {
             expiresIn: '1d'
         });
-        res.cookie('menuToken', menuCookies, { httpOnly: true });
+        res.cookie('menuToken', menuCookies, { httpOnly: true, sameSite: 'none', secure: true });
         res.json({ menu: menu });
     }else{
         // If the cookie is present, get the menu
@@ -64,7 +72,7 @@ router.get('/', validateToken, async (req, res) => {
             const menuCookies = jwt.sign({ menu: 'org' }, 'spongebobsquarepants', {
                 expiresIn: '1d'
             });
-            res.cookie('menuToken', menuCookies, { httpOnly: true });
+            res.cookie('menuToken', menuCookies, { httpOnly: true, sameSite: 'none', secure: true });
             res.json({ menu: menu });
         }else{
             // If the cookie is present, get the menu

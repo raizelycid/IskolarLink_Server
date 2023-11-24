@@ -11,7 +11,7 @@ require('dotenv').config();
 
 app.use(cors(
   {
-    origin: [process.env.WEBSITE_URL],
+    origin: 'https://iskolarlink.netlify.app',
     credentials: true
   }
 ));
@@ -60,7 +60,7 @@ const accreditedOrgRouter = require('./routes/AccreditedOrg');
 app.use('/accredited/org', accreditedOrgRouter);
 
 db.sequelize.sync().then(() => {
-  app.listen(process.env.SERVER_PORT || 3001, () => {
-    console.log('Server running on port 3001');
+  app.listen(process.env.PORT || 3001, "0.0.0.0", () => {
+    console.log(`Server is running on port ${process.env.PORT || 3001}`);
   });
 });

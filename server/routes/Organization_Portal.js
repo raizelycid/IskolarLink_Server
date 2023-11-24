@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Organization, Org_Application, Advisers, Requirements, Users, Membership, Students, Socials, Org_Announcement } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 // import all necessary libarry for file upload
@@ -29,7 +29,11 @@ router.get('/organization', validateToken, async (req, res) => {
         const socials = await Socials.findOne({
             where: {userId: id}
         });
-        res.json({organization: organization, user: user, socials: socials});
+        if(socials){
+            res.json({organization: organization, user: user, socials: socials});
+        }else{
+            res.json({organization: organization, user: user});
+        }
     }catch(err){
         res.json(err);
     }
@@ -112,7 +116,7 @@ router.post('/organization/settings', validateToken, async (req, res) => {
         )
 
         // Check if currentPassword and newPassword is not empty
-        if(currentPassword !== '' && newPassword !== ''){
+        if(currentPassword && newPassword){
             const user = await Users.findOne({
                 where: {id: id}
             });

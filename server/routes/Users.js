@@ -1,12 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const { Users, Students, Organization } = require('../models');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const validateToken = require('../middleware/AuthMiddleware');
+const cors = require('cors');
 
 router.use(cookieParser());
+
+router.use(cors({
+    origin: 'https://iskolarlink.netlify.app',
+    credentials: true,
+    sameSite: 'none',
+    secure: true
+}));
+
 
 router.post('/register', async (req, res) => {
     const { email, password, student_num,
@@ -58,6 +67,9 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     const { email, password, keepLoggedIn } = req.body;
+    console.log(email)
+    console.log(password)
+    console.log(keepLoggedIn)
     let expiry = "";
     if (keepLoggedIn) {
         expiry = '30d';
@@ -92,20 +104,22 @@ router.post('/login', async (req, res) => {
             }).then((org_client) => {
                 org = org_client;});
         }
+            console.log(student)
+            console.log(org)
             await bcrypt.compare(password, user.password).then((match) => {
                 if (match) {
                     if(user.role === "student"){
                         const name = student.student_Fname + " " + student.student_Lname;
                         const accessToken = jwt.sign({ id: user.id, username: name, role: user.role, student_id: student.id, is_verified: student.is_verified, is_cosoa: student.is_cosoa, is_web_admin: student.is_web_admin }, 'spongebobsquarepants', { expiresIn: expiry });
-                        res.cookie("accessToken", accessToken, { httpOnly: true });
+                        res.cookie("accessToken", accessToken, { httpOnly: true, sameSite: 'none', secure: true });
                         res.json(`Student logged in!`);
                     }else if(user.role === "organization"){
                         const accessToken = jwt.sign({ id: user.id, username: org.org_name, profile_picture: user.profile_picture, role: user.role },'spongebobsquarepants', { expiresIn: expiry });
-                        res.cookie("accessToken", accessToken, { maxAge: 3600 * 24 * 30 * 1000, httpOnly: true });
+                        res.cookie("accessToken", accessToken, { maxAge: 3600 * 24 * 30 * 1000, httpOnly: true, sameSite: 'none', secure: true });
                         const menuCookies = jwt.sign({ menu: 'org' }, 'spongebobsquarepants', {
                             expiresIn: '1d'
                         });
-                        res.cookie('menuToken', menuCookies, { httpOnly: true });
+                        res.cookie('menuToken', menuCookies, { httpOnly: true, sameSite: 'none', secure: true });
                         res.json({org: org});
                     }else{
                         res.json(`Wrong email or password!`);
@@ -115,7 +129,7 @@ router.post('/login', async (req, res) => {
                 }
             });
         } else {
-            res.json(`User not found!`);
+            res.json({error:`User not found!`});
         }
     } catch (err) {
         res.json(err);
@@ -169,8 +183,8 @@ router.post('/add_org/:orgId', validateToken, async (req, res) => {
 });
 
 router.post('/logout', validateToken, (req, res) => {
-    res.clearCookie('accessToken');
-    res.clearCookie('menuToken');
+    res.clearCookie('accessToken', { httpOnly: true, sameSite: 'none', secure: true });
+    res.clearCookie('menuToken', { httpOnly: true, sameSite: 'none', secure: true });
     return res.json('User logged out!');
 });
 module.exports = router;
