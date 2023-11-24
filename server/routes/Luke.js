@@ -8,6 +8,10 @@ const validateToken = require('../middleware/AuthMiddleware');
 const { Op, Sequelize } = require('sequelize');
 const fs = require('fs');
 
+router.get('/hello', (req, res) => {
+    res.json('Hello from the server side!');
+});
+
 router.post('/register', async (req, res) => {
     const students = req.body; // Expecting an array of students
 
