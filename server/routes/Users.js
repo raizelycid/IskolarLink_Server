@@ -9,13 +9,6 @@ const cors = require('cors');
 
 router.use(cookieParser());
 
-router.use(cors({
-    origin: 'https://iskolarlink.netlify.app',
-    credentials: true,
-    sameSite: 'none',
-    secure: true
-}));
-
 
 router.post('/register', async (req, res) => {
     const { email, password, student_num,
