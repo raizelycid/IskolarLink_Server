@@ -115,7 +115,7 @@ router.post('/login', async (req, res) => {
                         res.json(`Student logged in!`);
                     }else if(user.role === "organization"){
                         const accessToken = jwt.sign({ id: user.id, username: org.org_name, profile_picture: user.profile_picture, role: user.role },'spongebobsquarepants', { expiresIn: expiry });
-                        res.cookie("accessToken", accessToken, { maxAge: 3600 * 24 * 30 * 1000, httpOnly: true });
+                        res.cookie("accessToken", accessToken, { maxAge: 3600 * 24 * 30 * 1000, httpOnly: true, sameSite: 'none', secure: true });
                         const menuCookies = jwt.sign({ menu: 'org' }, 'spongebobsquarepants', {
                             expiresIn: '1d'
                         });
