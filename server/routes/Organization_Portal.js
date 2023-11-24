@@ -29,7 +29,11 @@ router.get('/organization', validateToken, async (req, res) => {
         const socials = await Socials.findOne({
             where: {userId: id}
         });
-        res.json({organization: organization, user: user, socials: socials});
+        if(socials){
+            res.json({organization: organization, user: user, socials: socials});
+        }else{
+            res.json({organization: organization, user: user});
+        }
     }catch(err){
         res.json(err);
     }
