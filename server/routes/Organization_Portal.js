@@ -116,7 +116,7 @@ router.post('/organization/settings', validateToken, async (req, res) => {
         )
 
         // Check if currentPassword and newPassword is not empty
-        if(currentPassword !== '' && newPassword !== ''){
+        if(currentPassword && newPassword){
             const user = await Users.findOne({
                 where: {id: id}
             });
