@@ -5,7 +5,7 @@ const validateToken = require('../middleware/AuthMiddleware');
 const checkPeriod = require('../middleware/App_Period');
 const fs =require('fs');
 const upload = require('express-fileupload');
-const bcrpyt = require('bcrypt');
+const bcrpyt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
 
 router.use(cookieParser());

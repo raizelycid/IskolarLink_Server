@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Users, Students, Organization, Advisers, Org_Application,Requirements } = require('../models');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const validateToken = require('../middleware/AuthMiddleware');

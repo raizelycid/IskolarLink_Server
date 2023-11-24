@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Organization, Org_Application, Advisers, Requirements, Users, Membership, Students, Socials, Org_Announcement } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 // import all necessary libarry for file upload
