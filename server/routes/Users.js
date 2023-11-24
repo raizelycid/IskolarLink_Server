@@ -183,8 +183,8 @@ router.post('/add_org/:orgId', validateToken, async (req, res) => {
 });
 
 router.post('/logout', validateToken, (req, res) => {
-    res.clearCookie('accessToken');
-    res.clearCookie('menuToken');
+    res.clearCookie('accessToken', { httpOnly: true, sameSite: 'none', secure: true });
+    res.clearCookie('menuToken', { httpOnly: true, sameSite: 'none', secure: true });
     return res.json('User logged out!');
 });
 module.exports = router;
