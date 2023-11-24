@@ -5,8 +5,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const validateToken = require('../middleware/AuthMiddleware');
+const cors = require('cors');
 
 router.use(cookieParser());
+
 
 router.post('/register', async (req, res) => {
     const { email, password, student_num,
@@ -115,7 +117,7 @@ router.post('/login', async (req, res) => {
                 }
             });
         } else {
-            res.json(`User not found!`);
+            res.json({error:`User not found!`});
         }
     } catch (err) {
         res.json(err);
