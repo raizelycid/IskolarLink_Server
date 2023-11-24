@@ -6,11 +6,12 @@ const db = require('./models');
 
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+require('dotenv').config();
 
 
 app.use(cors(
   {
-    origin: ["http://localhost:3000"],
+    origin: [process.env.WEBSITE_URL],
     credentials: true
   }
 ));
@@ -59,7 +60,7 @@ const accreditedOrgRouter = require('./routes/AccreditedOrg');
 app.use('/accredited/org', accreditedOrgRouter);
 
 db.sequelize.sync().then(() => {
-  app.listen(3001, () => {
+  app.listen(process.env.SERVER_PORT || 3001, () => {
     console.log('Server running on port 3001');
   });
 });
