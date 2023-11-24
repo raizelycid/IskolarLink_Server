@@ -143,7 +143,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
             });
         }
 
-        if(currentPassword !== "" && newPassword !== ""){
+        if(currentPassword  && newPassword){
             const user = await Users.findOne({
                 where: {
                     id: id
