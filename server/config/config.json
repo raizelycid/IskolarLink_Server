@@ -1,24 +1,26 @@
 {
   "development": {
     "username": "root",
-    "password": "midomicid0804!",
-    "database": "iskolarlink",
-    "host": "localhost",
+    "password": "F63Bb6CFh2aaAHGgDgE1DAFeeb41-Ecd",
+    "database": "railway",
+    "host": "viaduct.proxy.rlwy.net",
     "dialect": "mysql",
-    "port":"804"
+    "port":"14110"
   },
   "test": {
     "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "password": "F63Bb6CFh2aaAHGgDgE1DAFeeb41-Ecd",
+    "database": "railway",
+    "host": "viaduct.proxy.rlwy.net",
+    "dialect": "mysql",
+    "port":"14110"
   },
   "production": {
     "username": "root",
-    "password": null,
-    "database": "database_production",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "password": "F63Bb6CFh2aaAHGgDgE1DAFeeb41-Ecd",
+    "database": "railway",
+    "host": "viaduct.proxy.rlwy.net",
+    "dialect": "mysql",
+    "port":"14110"
   }
 }
