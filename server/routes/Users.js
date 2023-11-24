@@ -97,6 +97,8 @@ router.post('/login', async (req, res) => {
             }).then((org_client) => {
                 org = org_client;});
         }
+            console.log(student)
+            console.log(org)
             await bcrypt.compare(password, user.password).then((match) => {
                 if (match) {
                     if(user.role === "student"){
