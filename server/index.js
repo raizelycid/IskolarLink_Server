@@ -11,7 +11,7 @@ require('dotenv').config();
 
 app.use(cors(
   {
-    origin: [process.env.WEBSITE_URL],
+    origin: 'https://iskolarlink.netlify.app/',
     credentials: true
   }
 ));
