@@ -88,6 +88,7 @@ router.get('/', validateToken, async (req, res) => {
 router.post('/update_profile', validateToken, async (req, res) => {
     const {id} = req.decoded;
     const {description, currentPassword, newPassword, facebook, twitter, instagram, linkedin} = req.body;
+    console.log(req.body)
     try{
         if(req.files.profile_picture){
             const file = req.files.profile_picture;
