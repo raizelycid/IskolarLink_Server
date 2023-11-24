@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Organization, Org_Application, Advisers, Requirements, Users, Membership, Students, Socials } = require('../models');
+const { Organization, Org_Application, Advisers, Requirements, Users, Membership, Students, Socials, Org_Announcement } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -26,7 +26,7 @@ router.get('/organization', validateToken, async (req, res) => {
             where: {id: id}
         });
 
-        const socials = await Socials.findAll({
+        const socials = await Socials.findOne({
             where: {userId: id}
         });
         res.json({organization: organization, user: user, socials: socials});
@@ -188,5 +188,49 @@ router.post('/organization/settings', validateToken, async (req, res) => {
         res.json(err);
     }
 });
+
+
+router.post('/add_announcement', validateToken, async (req, res) => {
+    const {id} = req.decoded;
+    const {org_ann_title, org_ann_body, org_ann_link} = req.body;
+    const {org_ann_photo} = req.files;
+        const org_ann = await Org_Announcement.create({
+            org_ann_title: org_ann_title,
+            org_ann_link: org_ann_link,
+            org_ann_body: org_ann_body,
+            orgId: id,
+        })
+        .catch((err) => {
+            console.log(err)
+            res.json({error: err});
+        });
+        if(org_ann_photo){
+            const fullPath = `./public/org_announcements/${org_ann_photo.name}`;
+            org_ann_photo.mv(fullPath);
+            await Org_Announcement.update({
+                org_ann_photo: org_ann_photo.name,
+            },
+            {
+                where: {id: org_ann.id}
+            });
+        }
+        res.json({success: "Announcement Added!"});
+});
+
+
+router.get('/get_announcements', validateToken, async (req, res) => {
+    const {id} = req.decoded;
+    try{
+        const announcements = await Org_Announcement.findAll({
+            where: {orgId: id},
+            order: [['createdAt', 'DESC']],
+            limit: 3
+        });
+        res.json(announcements);
+    }catch(err){
+        res.json(err);
+    }
+});
+       
 
 module.exports = router;

@@ -9,6 +9,7 @@ const { ExpressFileuploadValidator} = require('express-fileupload-validator');
 const upload = require('express-fileupload');
 const {PDFDocument} = require('pdf-lib');
 const {readFile,writeFile} = require('fs/promises');
+const {Op} = require('sequelize');
 
 router.use(upload());
 
@@ -238,6 +239,38 @@ router.get('/show_accredited_orgs', async (req, res) => {
             }],
             where: {
                 is_accredited: true,
+            }
+        }).then((orgs) => {
+            res.json(orgs);
+        }
+        ).catch((err) => {
+            res.json(err);
+            console.log(err);
+        });
+
+    }
+    catch(err){
+        res.json(err);
+        console.log(err);
+    }
+});
+
+router.get('/show_accredited_orgs/:search', async (req, res) => {
+    try{
+        const {search} = req.params;
+
+        // get the accredited orgs and the user details of the orgs use join
+        Organization.findAll({
+            include: [{
+                model: Users,
+                attributes: ['id', 'role', 'description', 'profile_picture'],
+                required: true,
+            }],
+            where: {
+                is_accredited: true,
+                org_name: {
+                    [Op.like]: `%${search}%`
+                }  
             }
         }).then((orgs) => {
             res.json(orgs);
