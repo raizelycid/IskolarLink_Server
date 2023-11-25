@@ -173,4 +173,47 @@ router.get('/get_org/:id', async ( req, res) => {
     }
 });
 
+
+// count all orgs where org_status is Active
+router.get('/count_active_orgs', async (req, res) => {
+    try{
+        const orgs = await Organization.findAll({
+            where: {
+                org_status: "Active"
+            }
+        });
+        res.json(orgs.length);
+    }catch(err){
+        res.json(err);
+    }
+});
+
+// count all orgs where org_status is Pending
+router.get('/count_pending_orgs', async (req, res) => {
+    try{
+        const orgs = await Organization.findAll({
+            where: {
+                org_status: "Pending"
+            }
+        });
+        res.json(orgs.length);
+    }catch(err){
+        res.json(err);
+    }
+});
+
+//count all org_application but only one per orgId
+router.get('/count_org_application', async (req, res) => {
+    try{
+        const org_application_count = await Org_Application.count({
+            distinct: true,
+            col: 'orgId'
+        });
+        res.json(org_application_count);
+    } catch(err) {
+        res.json(err);
+    }
+});
+
+
 module.exports = router;
