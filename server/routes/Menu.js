@@ -7,6 +7,13 @@ const cors = require('cors');
 
 router.use(cookieParser());
 
+router.use(cors(
+    {
+        origin: 'https://iskolarlink.netlify.app',
+        credentials: true
+    }
+));
+
 
 router.post('/', async (req, res) => {
     const { menu } = req.body;
