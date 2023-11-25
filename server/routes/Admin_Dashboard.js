@@ -119,4 +119,31 @@ router.post('/give_feedback', async (req, res) => {
     }
 });
 
+
+// delete cor, student data, and user data
+router.post('/delete_student', async (req, res) => {
+    try{
+        //delete cor
+        fs.unlink(`./cor/${req.body.cor}`, (err) => {
+            if(err){
+                console.log(err);
+            }
+        });
+
+        //delete student data
+        const student = await Students.destroy({
+            where: {id: req.body.studentId}
+        });
+
+        //delete user data
+        const user = await Users.destroy({
+            where: {id: req.body.userId}
+        });
+
+        res.json({success: "Student deleted!"});
+    }catch(err){
+        res.json(err);
+    }
+});
+
 module.exports = router;

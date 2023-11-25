@@ -9,6 +9,12 @@ const cors = require('cors');
 
 router.use(cookieParser());
 
+router.use(cors(
+    {
+        origin: 'https://iskolarlink.netlify.app',
+        credentials: true
+    }
+));
 
 router.post('/register', async (req, res) => {
     const { email, password, student_num,
@@ -128,7 +134,7 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/', validateToken, async (req, res) => {
-    const { id, username, role, student_id, is_cosoa, is_web_admin } = req.decoded;
+    const { id, username, role, student_id, is_verified, is_cosoa, is_web_admin } = req.decoded;
     try {
         const user = await Users.findOne({
             where: {
@@ -137,7 +143,7 @@ router.get('/', validateToken, async (req, res) => {
         });
         const profile_picture = user.profile_picture;
         console.log(is_cosoa)
-        res.json({ id: id, username: username, profile_picture: profile_picture, role: role, student_id: student_id, is_cosoa: is_cosoa, is_web_admin: is_web_admin });
+        res.json({ id: id, username: username, profile_picture: profile_picture, role: role, student_id: student_id, is_verified: is_verified, is_cosoa: is_cosoa, is_web_admin: is_web_admin });
     } catch (err) {
         console.log(err);
         res.json(err);

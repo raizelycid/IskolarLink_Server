@@ -115,7 +115,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
             // get only the file extension of the file
             const fileExtension = file2.name.split('.').pop();
             const fileName2 = `${id}.${fileExtension}`;
-            const fullPath2 = `./cor/${fileName2}`;
+            const fullPath2 = `cor/${fileName2}`;
             file2.mv(fullPath2, async (err) => {
                 if(err){
                     console.log(err);
@@ -131,6 +131,10 @@ router.post('/update_profile', validateToken, async (req, res) => {
                     });
                 }
             });
+
+            // double check if the cor is already uploaded in cor folder
+
+            
         }
 
 
