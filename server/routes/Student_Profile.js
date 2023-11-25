@@ -5,7 +5,7 @@ const validateToken = require('../middleware/AuthMiddleware');
 const checkPeriod = require('../middleware/App_Period');
 const fs =require('fs');
 const upload = require('express-fileupload');
-const bcrpyt = require('bcrypt');
+const bcrpyt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
 
 router.use(cookieParser());
@@ -88,6 +88,7 @@ router.get('/', validateToken, async (req, res) => {
 router.post('/update_profile', validateToken, async (req, res) => {
     const {id} = req.decoded;
     const {description, currentPassword, newPassword, facebook, twitter, instagram, linkedin} = req.body;
+    console.log(req.body)
     try{
         if(req.files.profile_picture){
             const file = req.files.profile_picture;
@@ -142,7 +143,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
             });
         }
 
-        if(currentPassword !== "" && newPassword !== ""){
+        if(currentPassword  && newPassword){
             const user = await Users.findOne({
                 where: {
                     id: id
@@ -172,6 +173,11 @@ router.post('/update_profile', validateToken, async (req, res) => {
             }
         });
 
+        console.log(facebook)
+        console.log(twitter)
+        console.log(instagram)
+        console.log(linkedin)
+
         if(socials){
             await Socials.update({
                 facebook: facebook,
@@ -193,7 +199,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
             });
         }
 
-        res.json('Successfully updated profile');
+        res.json({success:'Successfully updated profile'});
 
         }catch(err){
             res.json(err);
