@@ -11,7 +11,7 @@ require('dotenv').config();
 
 app.use(cors(
   {
-    origin: 'https://iskolarlink.netlify.app',
+    origin: 'http://localhost:3000',
     credentials: true
   }
 ));
@@ -58,6 +58,10 @@ const studentPortalRouter = require('./routes/Student_Profile');
 app.use('/student_portal', studentPortalRouter);
 const accreditedOrgRouter = require('./routes/AccreditedOrg');
 app.use('/accredited/org', accreditedOrgRouter);
+const adminDashboardRouter = require('./routes/Admin_Dashboard');
+app.use('/admin', adminDashboardRouter);
+const membershipRouter = require('./routes/Membership');
+app.use('/membership', membershipRouter);
 
 db.sequelize.sync().then(() => {
   app.listen(process.env.PORT || 3001, "0.0.0.0", () => {

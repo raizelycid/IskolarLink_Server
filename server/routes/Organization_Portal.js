@@ -71,6 +71,7 @@ router.get('/organization/membership', validateToken, async (req, res) => {
     const {id} = req.decoded;
     try{
         const organization = await Organization.findOne({
+            attributes:['id'],
             where: {userId: id}
         });
 
@@ -94,7 +95,7 @@ router.get('/organization/membership', validateToken, async (req, res) => {
             members[i].dataValues.email = student.email;
         }
 
-        res.json(members);
+        res.json({members, organization});
     }catch(err){
         res.json(err);
     }
@@ -103,12 +104,14 @@ router.get('/organization/membership', validateToken, async (req, res) => {
 
 router.post('/organization/settings', validateToken, async (req, res) => {
     const {id} = req.decoded;
-    const {profile_picture, mission, vision, currentPassword, newPassword, facebook, twitter, instagram, linkedin} = req.body;
+    const {profile_picture, mission, vision, currentPassword, newPassword, facebook, twitter, instagram, linkedin, membership_period, strict} = req.body;
     try{
         const org = await Organization.update(
             {
                 mission: mission,
-                vision: vision
+                vision: vision,
+                membership_period: membership_period,
+                strict: strict,
             },
             {
                 where: {userId: id}
@@ -187,7 +190,8 @@ router.post('/organization/settings', validateToken, async (req, res) => {
             });
         }
 
-        res.json(true);
+
+        res.json({success: 'Successfully updated organization profile!'});
     }catch(err){
         res.json(err);
     }

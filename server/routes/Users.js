@@ -60,9 +60,6 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     const { email, password, keepLoggedIn } = req.body;
-    console.log(email)
-    console.log(password)
-    console.log(keepLoggedIn)
     let expiry = "";
     if (keepLoggedIn) {
         expiry = '30d';
@@ -102,10 +99,11 @@ router.post('/login', async (req, res) => {
             await bcrypt.compare(password, user.password).then((match) => {
                 if (match) {
                     if(user.role === "student"){
+                        console.log("Student logged in!")
                         const name = student.student_Fname + " " + student.student_Lname;
                         const accessToken = jwt.sign({ id: user.id, username: name, role: user.role, student_id: student.id, is_verified: student.is_verified, is_cosoa: student.is_cosoa, is_web_admin: student.is_web_admin }, 'spongebobsquarepants', { expiresIn: expiry });
                         res.cookie("accessToken", accessToken, { httpOnly: true, sameSite: 'none', secure: true });
-                        res.json(`Student logged in!`);
+                        res.json({student:`Student logged in!`});
                     }else if(user.role === "organization"){
                         const accessToken = jwt.sign({ id: user.id, username: org.org_name, profile_picture: user.profile_picture, role: user.role },'spongebobsquarepants', { expiresIn: expiry });
                         res.cookie("accessToken", accessToken, { maxAge: 3600 * 24 * 30 * 1000, httpOnly: true, sameSite: 'none', secure: true });
@@ -118,7 +116,7 @@ router.post('/login', async (req, res) => {
                         res.json(`Wrong email or password!`);
                     }
                 } else {
-                    res.json(`Wrong email or password!`);
+                    res.json({error:`Wrong email or password!`});
                 }
             });
         } else {

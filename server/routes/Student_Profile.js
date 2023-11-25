@@ -122,7 +122,8 @@ router.post('/update_profile', validateToken, async (req, res) => {
                     res.json(err);
                 }else{
                     await Students.update({
-                        cor: fileName2
+                        cor: fileName2,
+                        cor_remarks:null
                     },{
                         where: {
                             userId: id
