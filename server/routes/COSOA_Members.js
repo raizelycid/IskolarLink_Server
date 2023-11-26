@@ -8,28 +8,38 @@ const {Op} = require('sequelize')
 // Route to create a COSOA member
 router.post('/create_cosoa_member', validateToken, async (req, res) => {
     try {
+      console.log("starting process")
       // Get email from req.body
       const { email, position } = req.body;
   
       // Get id and role from req.decoded
-      const { id, role } = req.decoded;
+      const { student_id, role } = req.decoded;
   
       // Check if the user is a COSOA member and has an allowed position
-      if (role !== 'student' || !id) {
+      if (role !== 'student' || !student_id) {
         return res.status(400).json({ error: 'You are not authorized to create a COSOA member.' });
       }
+
+      console.log("PASS 1")
   
       // Check if the student's position is one of the allowed positions
       const allowedPositions = ['Chairperson', 'Chairperson (Asst.)', 'Vice Chairperson', 'Vice Chairperson (Asst.)'];
   
       // Find the student's position from the COSOA_Members table based on their ID
       const cosoaMember = await COSOA_Members.findOne({
-        where: { studentId: id }
+        where: { studentId: student_id }
       });
+      console.log(student_id)
+
+      console.log(cosoaMember)
+
+      console.log("PASS 2")
   
       if (!cosoaMember || !allowedPositions.includes(cosoaMember.position)) {
         return res.status(400).json({ error: 'You are not authorized to create a COSOA member.' });
       }
+
+      console.log("PASS 3")
   
       // Find the student using the provided email
       const user = await Users.findOne({
@@ -37,28 +47,40 @@ router.post('/create_cosoa_member', validateToken, async (req, res) => {
             [Op.like]:email
         } }
       });
+
+      console.log("PASS 4")
   
       if (!user) {
         return res.status(400).json({ error: 'User not found with the provided email.' });
       }
+
+      console.log("PASS 5")
   
       // Check if the user's is_verified is true
       const student = await Students.findOne({
         where: { userId: user.id }
       });
+
+      console.log("PASS 6")
   
       if (!student || !student.is_verified) {
         return res.status(400).json({ error: 'User is not verified or is not a student.' });
       }
+
+      console.log("PASS 7")
   
       // Check if a COSOA member with the same studentId exists
       const existingCOSOAMember = await COSOA_Members.findOne({
         where: { studentId: student.id }
       });
+
+      console.log("PASS 8")
   
       if (existingCOSOAMember) {
         return res.status(400).json({ error: 'A COSOA member already exists for this student.' });
       }
+
+      console.log("PASS 9")
   
       // Create a COSOA member with the student's id and position
       await COSOA_Members.create({
@@ -66,7 +88,13 @@ router.post('/create_cosoa_member', validateToken, async (req, res) => {
         studentId: student.id
       });
 
-      await student.update({is_cosoa: true})
+      console.log("PASS 10")
+
+      student.is_cosoa = true
+
+      await student.save();
+
+      console.log("PASS 11")
 
   
       return res.status(201).json({ success: 'COSOA member created successfully.' });
@@ -125,6 +153,7 @@ router.put('/update_cosoa_member/:memberId', validateToken, async (req, res) => 
     try {
       const { position } = req.body;
       const memberId = req.params.memberId;
+
   
       // Update the position of the COSOA member with memberId
       await COSOA_Members.update(
@@ -180,6 +209,29 @@ router.delete('/remove_cosoa_member/:memberId', validateToken, async (req, res) 
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+
+
+router.get('/search_student/:email', async (req, res) =>{
+  const {email} = req.params
+
+  const results = await Users.findAll({
+    include: [{
+      model: Students,
+      as: 'student',
+      attributes:['student_Fname','student_Lname','id']
+    }],
+    attributes:['id','profile_picture','email'],
+    where:{
+      email:{
+        [Op.like]: `%${email}%`
+      },
+      role: 'student'
+    }
+  })
+
+  res.json(results)
+
+});
   
 
 module.exports = router;
