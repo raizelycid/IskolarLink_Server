@@ -70,8 +70,8 @@ router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
                 orgId: orgId
             });
         }
-        if (!fs.existsSync(`./org_applications/accreditation/${orgId}`)){
-            fs.mkdirSync(`./org_applications/accreditation/${orgId}`);
+        if (!fs.existsSync(`org_applications/accreditation/${orgId}`)){
+            fs.mkdirSync(`org_applications/accreditation/${orgId}`);
         }
 
         
@@ -81,7 +81,7 @@ router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
         for (const fieldNames in files) {
             const file = files[fieldNames];
             fileUploadValidator.validate(file);
-            const filePath = `./org_applications/accreditation/${orgId}/${fieldNames}.pdf`;
+            const filePath = `org_applications/accreditation/${orgId}/${fieldNames}.pdf`;
             await file.mv(filePath);
             await Requirements.create({
                 orgId: orgId,
@@ -142,8 +142,8 @@ router.post('/revalidation', [validateToken, checkPeriod], async (req, res) => {
             });
         }
 
-        if (!fs.existsSync(`./org_applications/revalidation/${org.id}`)){
-            fs.mkdirSync(`./org_applications/revalidation/${org.id}`);
+        if (!fs.existsSync(`org_applications/revalidation/${org.id}`)){
+            fs.mkdirSync(`org_applications/revalidation/${org.id}`);
         }
 
         await Requirements.destroy({
@@ -163,7 +163,7 @@ router.post('/revalidation', [validateToken, checkPeriod], async (req, res) => {
         for (const fieldNames in files) {
             const file = files[fieldNames];
             fileUploadValidator.validate(file);
-            const filePath = `./org_applications/revalidation/${org.id}/${fieldNames}.pdf`;
+            const filePath = `org_applications/revalidation/${org.id}/${fieldNames}.pdf`;
             await file.mv(filePath);
             console.log(fieldNames)
             await Requirements.create({
@@ -193,13 +193,13 @@ router.post('/update_form/:org_id/:application_status', validateToken, async (re
     try{
         if(application_status === 'Accreditation'){
             fileUploadValidator.validate(file);
-            const filePath = `./org_applications/accreditation/${org_id}/${requirement_name}.pdf`;
+            const filePath = `org_applications/accreditation/${org_id}/${requirement_name}.pdf`;
             fs.writeFile(filePath, file.data, (err) => {if(err){console.log(err)}console.log(filePath)});
             res.json({message: 'Successfully updated form'})
         }else if(application_status === 'Revalidation'){
             console.log('Revalidation')
             fileUploadValidator.validate(file);
-            const filePath = `./org_applications/revalidation/${org_id}/${requirement_name}.pdf`;
+            const filePath = `org_applications/revalidation/${org_id}/${requirement_name}.pdf`;
             fs.writeFile(filePath, file.data, (err) => {if(err)console.log(err)});
             res.json({message: 'Successfully updated form'});
         }

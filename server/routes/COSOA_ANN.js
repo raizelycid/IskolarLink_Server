@@ -20,10 +20,10 @@ router.post('/', async (req, res) => {
             cosoa_ann_body: cosoa_ann_body
         });
 
-        const fullPath = `./public/cosoa_announcements/${cosoa_ann_photo.name}`;
+        const fullPath = `public/cosoa_announcements/${cosoa_ann_photo.name}`;
         cosoa_ann_photo.mv(fullPath);
 
-        res.json(cosoa_ann);
+        res.json("Successfully posted an announcement!");
     } catch (err) {
         res.json(err);
     }
