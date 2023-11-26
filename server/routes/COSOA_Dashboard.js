@@ -1,13 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const { Organization, Users, Students, COSOA_Members, Org_Application, Requirements, Advisers } = require('../models');
+const { Organization, Users, Students, COSOA_Members, Org_Application, Requirements, Advisers, Sequelize } = require('../models');
 
 
 router.get('/get_orgs', async (req, res) => {
 
     
     try{
-        const orgs = await Organization.findAll();
+        // Get all organizations and order them by application_status starting from Accreditation, Revalidation, Accredited, Revalidated
+        const orgs = await Organization.findAll({
+            order: Sequelize.literal('CASE WHEN application_status = "Accreditation" THEN 1 WHEN application_status = "Revalidation" THEN 2 WHEN application_status = "Accredited" THEN 3 WHEN application_status = "Revalidated" THEN 4 END')
+        });
         // Get every representative of each organization and add it to the orgs array
         for (let i = 0; i < orgs.length; i++){
             const user = await Users.findOne({
@@ -160,9 +163,14 @@ router.get('/get_org/:id', async ( req, res) => {
                 ],
                 limit: 1
             });
+
+            if(org_application.application_status === "Revalidated"){
+                res.json({error: "This organization still haven't applied for revalidation."});
+            }else{
     
             
             res.json({org, organized_requirements, adviser_names, user, org_application, requirements});
+            }
         }else if(org.application_status === "Accredited" || org.application_status === "Revalidated"){
             res.json({error: "This organization is already accredited or revalidated."});
         }

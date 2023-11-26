@@ -194,24 +194,45 @@ router.put('/update_socials', validateToken, async (req, res) => {
 });
 
 router.get('/accreditation_status', validateToken, async (req, res) => {
-    const{id} = req.decoded;
-    try{
+    const { id, role } = req.decoded;
+    console.log(req.decoded);
+    console.log(role);
+    console.log("Hello World")
+    try {
+        console.log("attempting to search for organization")
         const org = await Organization.findOne({
             where: {
                 userId: id,
             },
         });
+        console.log(org)
         if (org === null) {
-            console.log('No organization found!');
-            res.json({status: false});
-        } else {
-            res.json({status: true});
+            console.log("it got no org homie!")
+            res.json({ status: false });
+        } else if (role == 'organization') {
+            console.log("It got to organization")
+            // Find the latest Org_Application for the organization
+            const latestOrgApplication = await Org_Application.findOne({
+                where: {
+                    orgId: org.id,
+                },
+                order: [['createdAt', 'DESC']], // Order by createdAt in descending order to get the latest one
+            });
+
+            console.log(latestOrgApplication)
+
+            // Check if there is a latest Org_Application and its application_status is "Accredited"
+            if (latestOrgApplication && latestOrgApplication.application_status === 'Pending') {
+                res.json({ status: true });
+            } else {
+                res.json({ status: false });
+            }
         }
-    }
-    catch(err){
+    } catch (err) {
         res.json(err);
     }
 });
+
 
 router.get('/org_application_status', validateToken, async (req, res) => {
     const {id, student_id} = req.decoded;
@@ -253,12 +274,18 @@ router.post('/update_form/:org_id/:requirementId', [validateToken, checkPeriod],
     const { org_id, requirementId } = req.params;
     const file = req.files.file;
     const {requirement_name} = req.body;
+    const {role} = req.decoded
     console.log(file)
     console.log(requirement_name)
     try{
         fileUploadValidator.validate(file);
+        if(role === 'student'){
         const filePath = `./org_applications/accreditation/${org_id}/${requirement_name}.pdf`;
         fs.writeFile(filePath, file.data, (err) => {if(err){console.log(err)}console.log(filePath)});
+        }else if(role === 'organization'){
+            const filePath = `./org_applications/revalidation/${org_id}/${requirement_name}.pdf`;
+            fs.writeFile(filePath, file.data, (err) => {if(err){console.log(err)}console.log(filePath)});
+        }
         await Requirements.update({
             status: 'Revised',
             feedback: '',
