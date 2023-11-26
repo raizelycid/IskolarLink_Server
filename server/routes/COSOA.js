@@ -119,7 +119,7 @@ router.post('/ie2/:org_applicationId', validateToken, async (req, res) => {
 });
 
 router.post('/ie1/:org_applicationId/:requirementId', validateToken, async (req, res) => {
-    const { feedback } = req.body;
+    const { feedback, all } = req.body;
     const cosoa_member = await COSOA_Members.findOne({
         where: {
             studentId: req.decoded.student_id
@@ -155,6 +155,27 @@ router.post('/ie1/:org_applicationId/:requirementId', validateToken, async (req,
                 }
                 res.json(`Successfully returned the application with id ${org_applicationId}!`);
             }else{
+                //if all is true, update all the requirements' status to Approved
+                if(all){
+                    await Requirements.update({
+                        status:'Approved'
+                    },{
+                        where: {
+                            orgId: org_application.orgId
+                        }
+                    })
+
+                    if(org_application.application_status !== 'IE1'){
+                    await Org_Application.create({
+                        cosoaId: cosoa_id,
+                        studentId: org_application.studentId,
+                        orgId: org_application.orgId,
+                        application_status: 'IE1',
+                    });
+                }
+
+                    res.json(`Successfully approved all the requirements!`);
+                }else{
                 await Requirements.update({
                     status:'Approved'
                 },{
@@ -173,15 +194,16 @@ router.post('/ie1/:org_applicationId/:requirementId', validateToken, async (req,
             }
 
                 res.json(`Successfully approved the requirement with id ${requirementId}!`);
-            }
-            }catch(err){
+            }}}catch(err){
                 res.json(err);
             }
         }
     });
 
     router.post('/ie2/:org_applicationId/:requirementId', validateToken, async (req, res) => {
-    const { feedback } = req.body;
+    const { feedback, all } = req.body;
+    console.log(all)
+
     const cosoa_member = await COSOA_Members.findOne({
         where: {
             studentId: req.decoded.student_id
@@ -217,6 +239,27 @@ router.post('/ie1/:org_applicationId/:requirementId', validateToken, async (req,
                 }
                 res.json(`Successfully returned the application with id ${org_applicationId}!`);
             }else{
+                //if all is true, update all the requirements' status to Approved
+                if(all){
+                    await Requirements.update({
+                        status:'Approved'
+                    },{
+                        where: {
+                            orgId: org_application.orgId
+                        }
+                    })
+
+                    if(org_application.application_status !== 'IE1'){
+                    await Org_Application.create({
+                        cosoaId: cosoa_id,
+                        studentId: org_application.studentId,
+                        orgId: org_application.orgId,
+                        application_status: 'IE1',
+                    });
+                }
+
+                    res.json(`Successfully approved all the requirements!`);
+            }else{
                 await Requirements.update({
                     status:'Approved'
                 },{
@@ -236,6 +279,7 @@ router.post('/ie1/:org_applicationId/:requirementId', validateToken, async (req,
 
                 res.json(`Successfully approved the requirement with id ${requirementId}!`);
             }
+        }
             }catch(err){
                 res.json(err);
             }
@@ -303,7 +347,7 @@ router.post('/fe1/:org_applicationId', validateToken, async (req, res) => {
 });
 
 router.post('/fe1/:org_applicationId/:requirementId', validateToken, async (req, res) => {
-    const { feedback } = req.body;
+    const { feedback, all } = req.body;
     const cosoa_member = await COSOA_Members.findOne({
         where: {
             studentId: req.decoded.student_id
@@ -339,6 +383,27 @@ router.post('/fe1/:org_applicationId/:requirementId', validateToken, async (req,
                 }
                 res.json(`Successfully returned the application with id ${org_applicationId}!`);
             }else{
+                //if all is true, update all the requirements' status to Approved
+                if(all){
+                    await Requirements.update({
+                        status:'Approved'
+                    },{
+                        where: {
+                            orgId: org_application.orgId
+                        }
+                    })
+
+                    if(org_application.application_status !== 'IE2'){
+                    await Org_Application.create({
+                        cosoaId: cosoa_id,
+                        studentId: org_application.studentId,
+                        orgId: org_application.orgId,
+                        application_status: 'IE2',
+                    });
+                }
+
+                    res.json(`Successfully approved all the requirements!`);
+            }else{
                 await Requirements.update({
                     status:'Approved'
                 },{
@@ -349,6 +414,7 @@ router.post('/fe1/:org_applicationId/:requirementId', validateToken, async (req,
 
                 res.json(`Successfully approved the requirement with id ${requirementId}!`);
             }
+        }
             }catch(err){
                 res.json(err);
             }
@@ -415,7 +481,7 @@ router.post('/fe2/:org_applicationId', validateToken, async (req, res) => {
 });
 
 router.post('/fe2/:org_applicationId/:requirementId', validateToken, async (req, res) => {
-    const { feedback } = req.body;
+    const { feedback, all } = req.body;
     const cosoa_member = await COSOA_Members.findOne({
         where: {
             studentId: req.decoded.student_id
@@ -451,6 +517,28 @@ router.post('/fe2/:org_applicationId/:requirementId', validateToken, async (req,
                 }
                 res.json(`Successfully returned the application with id ${org_applicationId}!`);
             }else{
+                //if all is true, update all the requirements' status to Approved
+                if(all){
+                    await Requirements.update({
+                        status:'Approved'
+                    },{
+                        where: {
+                            orgId: org_application.orgId
+                        }
+                    })
+
+                    if(org_application.application_status !== 'FE1'){
+                    await Org_Application.create({
+                        cosoaId: cosoa_id,
+                        studentId: org_application.studentId,
+                        orgId: org_application.orgId,
+                        application_status: 'FE1',
+                    });
+                }
+
+                    res.json(`Successfully approved all the requirements!`);
+            }else{
+
                 await Requirements.update({
                     status:'Approved'
                 },{
@@ -461,6 +549,7 @@ router.post('/fe2/:org_applicationId/:requirementId', validateToken, async (req,
 
                 res.json(`Successfully approved the requirement with id ${requirementId}!`);
             }
+        }
             }catch(err){
                 res.json(err);
             }
@@ -598,7 +687,7 @@ router.post('/accredit/:org_applicationId', validateToken, async (req, res) => {
 });
 
 router.post('/acc/:org_applicationId/:requirementId', validateToken, async (req, res) => {
-    const { feedback } = req.body;
+    const { feedback, all } = req.body;
     const cosoa_member = await COSOA_Members.findOne({
         where: {
             studentId: req.decoded.student_id
@@ -634,6 +723,27 @@ router.post('/acc/:org_applicationId/:requirementId', validateToken, async (req,
                 }
                 res.json(`Successfully returned the application with id ${org_applicationId}!`);
             }else{
+                //if all is true, update all the requirements' status to Approved
+                if(all){
+                    await Requirements.update({
+                        status:'Approved'
+                    },{
+                        where: {
+                            orgId: org_application.orgId
+                        }
+                    })
+
+                    if(org_application.application_status !== 'FE2'){
+                    await Org_Application.create({
+                        cosoaId: cosoa_id,
+                        studentId: org_application.studentId,
+                        orgId: org_application.orgId,
+                        application_status: 'FE2',
+                    });
+                }
+
+                    res.json(`Successfully approved all the requirements!`);
+            }else{
                 await Requirements.update({
                     status:'Approved'
                 },{
@@ -644,6 +754,7 @@ router.post('/acc/:org_applicationId/:requirementId', validateToken, async (req,
 
                 res.json(`Successfully approved the requirement with id ${requirementId}!`);
             }
+        }
             }catch(err){
                 res.json(err);
             }
