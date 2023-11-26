@@ -58,6 +58,12 @@ const studentPortalRouter = require('./routes/Student_Profile');
 app.use('/student_portal', studentPortalRouter);
 const accreditedOrgRouter = require('./routes/AccreditedOrg');
 app.use('/accredited/org', accreditedOrgRouter);
+const adminDashboardRouter = require('./routes/Admin_Dashboard');
+app.use('/admin', adminDashboardRouter);
+const membershipRouter = require('./routes/Membership');
+app.use('/membership', membershipRouter);
+const feedbackRouter = require('./routes/Feedback');
+app.use('/feedback', feedbackRouter);
 
 db.sequelize.sync().then(() => {
   app.listen(process.env.PORT || 3001, "0.0.0.0", () => {

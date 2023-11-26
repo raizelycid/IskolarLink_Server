@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Users, Students, COSOA_Members, COSOA_Profile } = require('../models');
+const { Users, Students, COSOA_Members, COSOA_Profile, Application_Period } = require('../models');
 const fs = require('fs');
 const { ExpressFileuploadValidator} = require('express-fileupload-validator');
 const upload = require('express-fileupload');
@@ -15,6 +15,13 @@ router.get('/get_cosoa_details', async (req, res) => {
                 id: 1
             }
         });
+
+        const application_period = await Application_Period.findOne({
+            where: {
+                id: 1
+            }
+        });
+        cosoa_profile.dataValues.application_period = application_period.application_period;
         res.json(cosoa_profile);
     }catch(err){
         res.json(err);

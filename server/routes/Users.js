@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Users, Students, Organization } = require('../models');
+const { Users, Students, Organization, Org_Application } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -9,13 +9,12 @@ const cors = require('cors');
 
 router.use(cookieParser());
 
-router.use(cors({
-    origin: 'https://iskolarlink.netlify.app',
-    credentials: true,
-    sameSite: 'none',
-    secure: true
-}));
-
+router.use(cors(
+    {
+        origin: 'https://iskolarlink.netlify.app',
+        credentials: true
+    }
+));
 
 router.post('/register', async (req, res) => {
     const { email, password, student_num,
@@ -67,9 +66,6 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     const { email, password, keepLoggedIn } = req.body;
-    console.log(email)
-    console.log(password)
-    console.log(keepLoggedIn)
     let expiry = "";
     if (keepLoggedIn) {
         expiry = '30d';
@@ -83,7 +79,6 @@ router.post('/login', async (req, res) => {
                 email: email
             }
         });
-        console.log(user)
         if (user) {
             console.log("User found!")
             let student = "";
@@ -96,25 +91,42 @@ router.post('/login', async (req, res) => {
             }).then((student_client) => {
                 student = student_client;});
             }else if(user.role === 'organization'){
-            console.log("User found!")
             const org_client = await Organization.findOne({
                 where: {
                     userId: user.id
-                }
+                }   
+            // find the latest application of the organization
+                
             }).then((org_client) => {
+                console.log("Organization found!")
                 org = org_client;});
+            const org_application = await Org_Application.findOne({
+                    where: {
+                        orgId: org.id
+                    },
+                    order: [['createdAt', 'DESC']]
+                });
+            console.log("Organization application found!")
+
+            if(org.org_status === "Pending" && (org_application.application_status === "Accredited" || org_application.application_status === "Revalidated")){
+                org.show_application = 1;
+            }else if(org.org_status === "Pending"){
+                org.show_application = 2;
+            }else{
+                org.show_application = 0;
+            }
         }
-            console.log(student)
-            console.log(org)
             await bcrypt.compare(password, user.password).then((match) => {
                 if (match) {
                     if(user.role === "student"){
+                        console.log("Student logged in!")
                         const name = student.student_Fname + " " + student.student_Lname;
                         const accessToken = jwt.sign({ id: user.id, username: name, role: user.role, student_id: student.id, is_verified: student.is_verified, is_cosoa: student.is_cosoa, is_web_admin: student.is_web_admin }, 'spongebobsquarepants', { expiresIn: expiry });
                         res.cookie("accessToken", accessToken, { httpOnly: true, sameSite: 'none', secure: true });
-                        res.json(`Student logged in!`);
+                        res.json({student:`Student logged in!`});
                     }else if(user.role === "organization"){
-                        const accessToken = jwt.sign({ id: user.id, username: org.org_name, profile_picture: user.profile_picture, role: user.role },'spongebobsquarepants', { expiresIn: expiry });
+                        console.log("Creating Cookie for Organization")
+                        const accessToken = jwt.sign({ id: user.id, username: org.org_name, profile_picture: user.profile_picture, role: user.role, show_application: org.show_application },'spongebobsquarepants', { expiresIn: expiry });
                         res.cookie("accessToken", accessToken, { maxAge: 3600 * 24 * 30 * 1000, httpOnly: true, sameSite: 'none', secure: true });
                         const menuCookies = jwt.sign({ menu: 'org' }, 'spongebobsquarepants', {
                             expiresIn: '1d'
@@ -125,7 +137,7 @@ router.post('/login', async (req, res) => {
                         res.json(`Wrong email or password!`);
                     }
                 } else {
-                    res.json(`Wrong email or password!`);
+                    res.json({error:`Wrong email or password!`});
                 }
             });
         } else {
@@ -137,19 +149,37 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/', validateToken, async (req, res) => {
-    const { id, username, role, student_id, is_cosoa, is_web_admin } = req.decoded;
-    try {
-        const user = await Users.findOne({
-            where: {
-                id: id
-            }
-        });
-        const profile_picture = user.profile_picture;
-        console.log(is_cosoa)
-        res.json({ id: id, username: username, profile_picture: profile_picture, role: role, student_id: student_id, is_cosoa: is_cosoa, is_web_admin: is_web_admin });
-    } catch (err) {
-        console.log(err);
-        res.json(err);
+    const { id, username, role} = req.decoded;
+    if(role === "student"){
+        const { student_id, is_verified, is_cosoa, is_web_admin } = req.decoded;
+        try{
+            const user = await Users.findOne({
+                where: {
+                    id: id
+                }
+            });
+            const profile_picture = user.profile_picture;
+            res.json({ id: id, username: username, profile_picture: profile_picture, role: role, student_id: student_id, is_verified: is_verified, is_cosoa: is_cosoa, is_web_admin: is_web_admin });
+        }catch(err){
+            console.log(err);
+            res.json(err);
+        }
+    }else if(role === "organization"){
+        const { show_application } = req.decoded;
+        try{
+            const user = await Users.findOne({
+                where: {
+                    id: id
+                }
+            });
+            const profile_picture = user.profile_picture;
+            res.json({ id: id, username: username, profile_picture: profile_picture, role: role, show_application: show_application });
+        }catch(err){   
+            console.log(err);
+            res.json(err);
+        }
+    }else{
+        res.json({error: "User not found!"});
     }
 });
 
