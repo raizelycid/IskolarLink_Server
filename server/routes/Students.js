@@ -280,10 +280,10 @@ router.post('/update_form/:org_id/:requirementId', [validateToken, checkPeriod],
     try{
         fileUploadValidator.validate(file);
         if(role === 'student'){
-        const filePath = `./org_applications/accreditation/${org_id}/${requirement_name}.pdf`;
+        const filePath = `org_applications/accreditation/${org_id}/${requirement_name}.pdf`;
         fs.writeFile(filePath, file.data, (err) => {if(err){console.log(err)}console.log(filePath)});
         }else if(role === 'organization'){
-            const filePath = `./org_applications/revalidation/${org_id}/${requirement_name}.pdf`;
+            const filePath = `org_applications/revalidation/${org_id}/${requirement_name}.pdf`;
             fs.writeFile(filePath, file.data, (err) => {if(err){console.log(err)}console.log(filePath)});
         }
         await Requirements.update({
