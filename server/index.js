@@ -11,7 +11,7 @@ require('dotenv').config();
 
 app.use(cors(
   {
-    origin: 'https://iskolarlink.netlify.app',
+    origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
     credentials: true
   }
 ));
@@ -64,6 +64,8 @@ const membershipRouter = require('./routes/Membership');
 app.use('/membership', membershipRouter);
 const feedbackRouter = require('./routes/Feedback');
 app.use('/feedback', feedbackRouter);
+const cosoaMembers = require('./routes/COSOA_Members');
+app.use('/cosoa_member', cosoaMembers)
 
 db.sequelize.sync().then(() => {
   app.listen(process.env.PORT || 3001, "0.0.0.0", () => {
