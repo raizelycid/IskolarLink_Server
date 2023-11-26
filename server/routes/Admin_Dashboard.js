@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { Organization, Org_Application, Advisers, Requirements, Users, Membership, Students, Socials, Org_Announcement, COSOA_Members } = require('../models');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const fs = require('fs');
+const validateToken = require('../middleware/AuthMiddleware');
 
 
 
@@ -36,14 +37,17 @@ router.get('/get_chairperson', async (req, res) => {
             attributes: ['studentId'],
             where: {position: 'Chairperson'}
         });
+        console.log("PASS 1")
         const student = await Students.findOne({
             attributes: ['student_Fname','student_Lname','userId'],
-            where: {userId: chairperson.studentId}
+            where: {id: chairperson.studentId}
         });
+        console.log("PASS 2")
         const user = await Users.findOne({
             attributes: ['email','profile_picture'],
             where: {id: student.userId}
         });
+        console.log("PASS 3")
         
         res.json({user: user, student: student});
     }catch(err){
@@ -145,5 +149,81 @@ router.post('/delete_student', async (req, res) => {
         res.json(err);
     }
 });
+
+//Change Chairperson
+router.post('/update_chairperson', validateToken, async (req,res) => {
+    const {id} = req.decoded
+    const {student_num, email} = req.body
+
+    const student = await Students.findOne({
+        where: {userId:id}
+    });
+
+
+    if(!student.is_web_admin){
+        return res.json({error:"You are not an admin! WE HAVE NOTIFIED THE ADMIN ABOUT THIS INCIDENT. GET OUT!"})
+    }
+    console.log("PASS 1")
+
+    const confirmNumber = await Users.findOne({
+        where:{email:{[Op.like]: `%${email}%`}}
+    })
+
+    if(!confirmNumber){
+        return res.json({error: "The student number you submitted does not exist. Try Again."})
+    }
+    console.log("PASS 2")
+
+
+    const newChairman = await Students.findOne({
+        where:{student_num: student_num}
+    })
+
+    if(!newChairman.is_verified){
+        return res.json({error: "The Student you are trying to give chairperson rights is not verified."})
+    }
+
+    if(confirmNumber.id !== newChairman.userId){
+        return res.json({error: "The Student Number and Webmail you provided does not match."})
+    }
+    console.log("PASS 3")
+
+    const formerChairperson = await COSOA_Members.findOne({
+        where: {position: "Chairperson"}
+    })
+    console.log("PASS 4")
+
+    const formerMember = await COSOA_Members.findOne({
+        where: {studentId: newChairman.id}
+    })
+
+
+    if(formerMember){
+        formerMember.destroy()
+    }
+
+    console.log("PASS 5")
+
+    await COSOA_Members.update(
+        {studentId:newChairman.id},
+        {where: {id: formerChairperson.id}}
+    )
+
+    await Students.update({
+        is_cosoa: false
+    }, {where:{id:formerChairperson.studentId}})
+
+    newChairman.is_cosoa = true;
+    await newChairman.save()
+
+
+
+    console.log("PASS 6")
+
+    res.status(200).json({success: `Successfully transfered rights to ${newChairman.student_Fname} ${newChairman.student_Lname}`})
+
+});
+
+
 
 module.exports = router;
