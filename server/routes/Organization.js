@@ -11,6 +11,7 @@ const {PDFDocument} = require('pdf-lib');
 const {readFile,writeFile} = require('fs/promises');
 const {Op} = require('sequelize');
 
+
 router.use(upload());
 
 const fileUploadValidator = new ExpressFileuploadValidator({
@@ -85,7 +86,7 @@ router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
             await Requirements.create({
                 orgId: orgId,
                 requirement_name: fieldNames,
-                requirement: filePath,
+                requirement: fieldNames + '.pdf',
             });
         }
         console.log({request_body: req.body, request_files: req.files, request_decoded: req.decoded, organization: organization, org_application: org_application, advisers: advisers_array});
@@ -97,14 +98,13 @@ router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
     }
 });
 
-router.post('/revalidation/:orgId', [validateToken, checkPeriod], async (req, res) => {
-    const { orgId } = req.params;
-    const { id, student_id } = req.decoded;
+router.post('/revalidation', [validateToken, checkPeriod], async (req, res) => {
+    const { id} = req.decoded;
     const { org_name, jurisdiction, sub_jurisdiction, type, advisers} = req.body;
     try{
         const org = await Organization.findOne({
             where: {
-                id: orgId
+                userId: id
             }
         });
         if (org_name != org.org_name || jurisdiction != org.jurisdiction || sub_jurisdiction != org.sub_jurisdiction || type != org.type){
@@ -113,85 +113,69 @@ router.post('/revalidation/:orgId', [validateToken, checkPeriod], async (req, re
                 jurisdiction: jurisdiction,
                 sub_jurisdiction: sub_jurisdiction,
                 type: type,
-                userId: id
             },{
                 where: {
-                    id: orgId
+                    userId: id
                 }
             });
         }
         const org_application = await Org_Application.create({
-            orgId: orgId,
+            orgId: org.id,
             application_status: 'Pending',
         });
         
         // destroy all advisers
         await Advisers.destroy({
             where: {
-                orgId: orgId
+                orgId: org.id
             }
         });
         
+        // convert advisers to array
+        let advisers_array = advisers.split(',');
+        
         // Create Adviser for Each Adviser
-        for (let i = 0; i < advisers.length; i++){
+        for (let i = 0; i < advisers_array.length; i++){
             await Advisers.create({
-                adviser_name: advisers[i],
-                orgId: orgId
+                adviser_name: advisers_array[i],
+                orgId: org.id
             });
         }
 
-        if (!fs.existsSync(`./org_applications/revalidation/${orgId}`)){
-            fs.mkdirSync(`./org_applications/revalidation/${orgId}`);
+        if (!fs.existsSync(`./org_applications/revalidation/${org.id}`)){
+            fs.mkdirSync(`./org_applications/revalidation/${org.id}`);
         }
 
-        const pdfDoc = await PDFDocument.load(await readFile(`./templates/revalidation/RF001-TRACKER FORM.pdf`));
-
-        const form = pdfDoc.getForm();
-        const fieldNames = form.getFields();
-        let adviser_names = '';
-        for (let i = 0; i < advisers.length; i++){
-            adviser_names += advisers[i];
-            if (i != advisers.length - 1){
-                adviser_names += ', ';
+        await Requirements.destroy({
+            where: {
+                orgId:org.id
             }
-        }
+        })
 
-        form.getTextField(fieldNames[0].getName()).setText(org.socn);
-        form.getTextField(fieldNames[1].getName()).setText(org_name);
-        form.getTextField(fieldNames[2].getName()).setText(jurisdiction);
-        form.getTextField(fieldNames[3].getName()).setText(sub_jurisdiction);
-        form.getTextField(fieldNames[4].getName()).setText(type);
-        form.getTextField(fieldNames[5].getName()).setText(adviser_names);
-        form.getTextField(fieldNames[6].getName()).setText(org_name);
-
-        const pdfBytes = await pdfDoc.save();
-        await writeFile(`./org_applications/revalidation/${orgId}/RF001.pdf`,pdfBytes);
-
-        await Requirements.create({
-            orgId: orgId,
-            requirement_name: 'RF001',
-            requirement: `./org_applications/revalidation/${orgId}/RF001.pdf`,
-        });
 
         const files = req.files;
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.json('No files were uploaded.');
         }
 
+        
+
         for (const fieldNames in files) {
             const file = files[fieldNames];
             fileUploadValidator.validate(file);
-            const filePath = `./org_applications/revalidation/${orgId}/${fieldNames}.pdf`;
+            const filePath = `./org_applications/revalidation/${org.id}/${fieldNames}.pdf`;
             await file.mv(filePath);
+            console.log(fieldNames)
             await Requirements.create({
-                orgId: orgId,
+                orgId: org.id,
                 requirement_name: fieldNames,
-                requirement: filePath,
+                requirement: fieldNames + '.pdf',
+            }, {
+                logging: console.log, // Enable query logging for this specific query
             });
         }
 
-        res.json("Successfully created organization");
-
+        res.json({success: "Successfully applied for revalidation!"});
     }
     catch(err){
         res.json(err);
@@ -200,7 +184,7 @@ router.post('/revalidation/:orgId', [validateToken, checkPeriod], async (req, re
 })
 
 
-router.post('/update_form/:org_id/:application_status', [validateToken, checkPeriod], async (req, res) => {
+router.post('/update_form/:org_id/:application_status', validateToken, async (req, res) => {
     const { org_id, application_status } = req.params;
     const file = req.files.file;
     const {requirement_name} = req.body;
@@ -241,6 +225,19 @@ router.get('/show_accredited_orgs', async (req, res) => {
                 is_accredited: true,
             }
         }).then((orgs) => {
+            let new_subjurisdiction = "";
+            for (let i = 0; i < orgs.length; i++){
+                if(orgs[i].subjurisdiction !== 'University-Wide'){
+                    //Get only the last word in the string
+                    new_subjurisdiction = orgs[i].subjurisdiction.split(" ");
+                    new_subjurisdiction = new_subjurisdiction[new_subjurisdiction.length - 1];
+                }
+                else{
+                    new_subjurisdiction = "U-Wide"
+                }
+                orgs[i].dataValues.subjurisdiction = new_subjurisdiction;
+                new_subjurisdiction = "";
+            }
             res.json(orgs);
         }
         ).catch((err) => {
