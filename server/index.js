@@ -66,6 +66,9 @@ const feedbackRouter = require('./routes/Feedback');
 app.use('/feedback', feedbackRouter);
 const cosoaMembers = require('./routes/COSOA_Members');
 app.use('/cosoa_member', cosoaMembers)
+const landingPage = require('./routes/LandingPage');
+app.use('/landingpage', landingPage)
+
 
 db.sequelize.sync().then(() => {
   app.listen(process.env.PORT || 3001, "0.0.0.0", () => {
