@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Organization, Org_Application, Advisers, Requirements, Users, Membership, Students, Socials, Org_Announcement, COSOA_Members } = require('../models');
+const { Organization, Org_Application, Advisers, Requirements, Users, Membership, Students, Socials, Org_Announcement, COSOA_Members, Application_Period } = require('../models');
 const { Op, where } = require('sequelize');
 const fs = require('fs');
 const validateToken = require('../middleware/AuthMiddleware');
@@ -32,6 +32,18 @@ router.get('/section2', async (req,res)=>{
 
 
     res.json(section2)
+})
+
+router.get('/application_period', async (req, res) =>{
+    const profile = await Application_Period.findOne({
+        where: {id:1}
+    })
+
+    if(profile.application_period){
+        return res.json({status:true})
+    }else{
+        return res.json({status: false})
+    }
 })
 
 

@@ -55,12 +55,30 @@ router.get('/get_chairperson', async (req, res) => {
     }
 });
 
+router.get('/get_web_admin', async (req,res)=> {
+    try{
+        const admin = await Students.findOne({
+            attributes: ['student_Fname','student_Lname','userId'],
+            where:{is_web_admin:true}
+        })
+
+        const user = await Users.findOne({
+            attributes: ['email','profile_picture'],
+            where: {id: admin.userId}
+        });
+
+        res.json({admin: admin, user:user})
+    
+    }catch(err){
+        res.json(err)
+    }
+})
+
 // get students with cor but not verified
-router.get('/get_students_to_verify', async (req, res) => {
+router.get('/get_students', async (req, res) => {
     try{
         const students = await Students.findAll({
-            attributes: ['userId', 'id', 'student_Fname', 'student_Lname', 'cor', 'cor_remarks', 'is_verified'],
-            where: {cor: {[Op.ne]: null}, is_verified: false}
+            attributes: ['userId', 'id', 'student_Fname', 'student_Lname', 'cor', 'cor_remarks', 'is_verified', 'createdAt'],
         });
 
         //get their email from Users table
@@ -71,7 +89,10 @@ router.get('/get_students_to_verify', async (req, res) => {
 
         // merge the studentIds from their respective students
         const studentsWithIds = students.map((student, index) => {
-            return {...student.dataValues, email: studentIds[index].email};
+            const createdAt = new Date(student.createdAt);
+            const currentDate = new Date();
+            const daysDifference = Math.floor((currentDate - createdAt) / (1000 * 60 * 60 * 24));
+            return {...student.dataValues, email: studentIds[index].email, days: daysDifference};
         });
 
         res.json(studentsWithIds);
@@ -151,78 +172,135 @@ router.post('/delete_student', async (req, res) => {
 });
 
 //Change Chairperson
-router.post('/update_chairperson', validateToken, async (req,res) => {
-    const {id} = req.decoded
-    const {student_num, email} = req.body
+router.post("/update_chairperson", validateToken, async (req, res) => {
+  const { id } = req.decoded;
+  const { student_num, email } = req.body;
 
-    const student = await Students.findOne({
-        where: {userId:id}
+
+  console.log("attempting to update chairperson");
+
+  const student = await Students.findOne({
+    where: { userId: id },
+  });
+
+  if (!student.is_web_admin) {
+    return res.json({
+      error:
+        "You are not an admin! WE HAVE NOTIFIED THE ADMIN ABOUT THIS INCIDENT. GET OUT!",
     });
-
-
-    if(!student.is_web_admin){
-        return res.json({error:"You are not an admin! WE HAVE NOTIFIED THE ADMIN ABOUT THIS INCIDENT. GET OUT!"})
+  } else {
+    const chairperson = await COSOA_Members.findOne({
+      where: { position: "Chairperson" },
+    });
+    if (!chairperson) {
+      return res.json({
+        error: "Chairman has been deleted. notify your Database admin immediately",
+      });
+    } else {
+      const newChairpersonUser = await Users.findOne({
+        where: { email: email },
+      });
+      if (!newChairpersonUser) {
+        return res.json({ error: "The email you provided does not exist." });
+      } else {
+        const newChairpersonStudent = await Students.findOne({
+          where: { student_num: student_num },
+        });
+        if (!newChairpersonStudent) {
+          return res.json({
+            error: "The Student Number you provided does not exist",
+          });
+        } else {
+          const valid1 = newChairpersonStudent.is_verified === true;
+          if (!valid1) {
+            return res.json({ error: "The Student is not verified yet" });
+          } else {
+            const valid2 =
+              newChairpersonUser.id === newChairpersonStudent.userId;
+            if (!valid2) {
+              return res.json({
+                error:
+                  "The Student Number and Webmail you provided doesn't match.",
+              });
+            } else {
+              const member = await COSOA_Members.findOne({
+                where: { studentId: newChairpersonStudent.id },
+              });
+              if (member) {
+                await member.destroy();
+              } else {
+                chairperson.studentId = newChairpersonStudent.id;
+                await chairperson.save();
+                student.is_cosoa = false;
+                await student.save();
+                newChairpersonStudent.is_cosoa = true;
+                await newChairpersonStudent.save()
+                return res.json({success:`Successfully updated the chairman to ${newChairpersonStudent.student_Fname} ${newChairpersonStudent.student_Lname} ${newChairpersonStudent.student_suffix}`})
+              }
+            }
+          }
+        }
+      }
     }
-    console.log("PASS 1")
-
-    const confirmNumber = await Users.findOne({
-        where:{email:{[Op.like]: `%${email}%`}}
-    })
-
-    if(!confirmNumber){
-        return res.json({error: "The student number you submitted does not exist. Try Again."})
-    }
-    console.log("PASS 2")
-
-
-    const newChairman = await Students.findOne({
-        where:{student_num: student_num}
-    })
-
-    if(!newChairman.is_verified){
-        return res.json({error: "The Student you are trying to give chairperson rights is not verified."})
-    }
-
-    if(confirmNumber.id !== newChairman.userId){
-        return res.json({error: "The Student Number and Webmail you provided does not match."})
-    }
-    console.log("PASS 3")
-
-    const formerChairperson = await COSOA_Members.findOne({
-        where: {position: "Chairperson"}
-    })
-    console.log("PASS 4")
-
-    const formerMember = await COSOA_Members.findOne({
-        where: {studentId: newChairman.id}
-    })
-
-
-    if(formerMember){
-        formerMember.destroy()
-    }
-
-    console.log("PASS 5")
-
-    await COSOA_Members.update(
-        {studentId:newChairman.id},
-        {where: {id: formerChairperson.id}}
-    )
-
-    await Students.update({
-        is_cosoa: false
-    }, {where:{id:formerChairperson.studentId}})
-
-    newChairman.is_cosoa = true;
-    await newChairman.save()
-
-
-
-    console.log("PASS 6")
-
-    res.status(200).json({success: `Successfully transfered rights to ${newChairman.student_Fname} ${newChairman.student_Lname}`})
-
+  }
 });
+
+
+
+router.post("/update_web_admin", validateToken, async (req, res) => {
+    const { id } = req.decoded;
+    const { student_num, email } = req.body;
+  
+  
+    console.log("attempting to update web admin");
+  
+    const student = await Students.findOne({
+      where: { userId: id },
+    });
+  
+    if (!student.is_web_admin) {
+      return res.json({
+        error:
+          "You are not an admin! WE HAVE NOTIFIED THE ADMIN ABOUT THIS INCIDENT. GET OUT!",
+      });
+    } else {
+        const newWebAdminUser = await Users.findOne({
+          where: { email: email },
+        });
+        if (!newWebAdminUser) {
+          return res.json({ error: "The email you provided does not exist." });
+        } else {
+          const newWebAdminStudent = await Students.findOne({
+            where: { student_num: student_num },
+          });
+          if (!newWebAdminStudent) {
+            return res.json({
+              error: "The Student Number you provided does not exist",
+            });
+          } else {
+            const valid1 = newWebAdminStudent.is_verified === true;
+            if (!valid1) {
+              return res.json({ error: "The Student is not verified yet" });
+            } else {
+              const valid2 =
+                newWebAdminUser.id === newWebAdminStudent.userId;
+              if (!valid2) {
+                return res.json({
+                  error:
+                    "The Student Number and Webmail you provided doesn't match.",
+                });
+              } else {
+                  student.is_web_admin = false;
+                  await student.save();
+                  newWebAdminStudent.is_web_admin = true;
+                  await newWebAdminStudent.save();
+                  return res.json({success:`Successfully updated the Website Admin to ${newWebAdminStudent.student_Fname} ${newWebAdminStudent.student_Lname} ${newWebAdminStudent.student_suffix}`})
+                }
+              }
+            }
+      }
+    }
+  });
 
 
 
