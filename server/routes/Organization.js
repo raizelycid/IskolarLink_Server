@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Organization, Org_Application, Advisers, Requirements, Users } = require('../models');
+const { Organization, Org_Application, Advisers, Requirements, Users,Students } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
 const cookieParser = require('cookie-parser');
 const checkPeriod = require('../middleware/App_Period');
@@ -89,7 +89,16 @@ router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
                 requirement: fieldNames + '.pdf',
             });
         }
-        console.log({request_body: req.body, request_files: req.files, request_decoded: req.decoded, organization: organization, org_application: org_application, advisers: advisers_array});
+
+        const student = await Students.findOne({
+            where: {userId: id}
+        });
+
+        student.has_created = true;
+
+        await student.save();
+
+        
         res.json({organization: organization});
         
     } catch (err) {

@@ -206,6 +206,7 @@ router.get('/accreditation_status', validateToken, async (req, res) => {
             },
         });
         console.log(org)
+        console.log("PASS 1")
         if (org === null) {
             console.log("it got no org homie!")
             res.json({ status: false });
@@ -227,6 +228,9 @@ router.get('/accreditation_status', validateToken, async (req, res) => {
             } else {
                 res.json({ status: false });
             }
+        }else if (role == 'student'){
+            console.log("it is a student!")
+            res.json({status: true})
         }
     } catch (err) {
         res.json(err);

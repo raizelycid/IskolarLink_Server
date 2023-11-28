@@ -62,7 +62,14 @@ module.exports = (sequelize, DataTypes) => {
         // if user is a Web Admin
         is_web_admin: {
             type: DataTypes.BOOLEAN,
-            allowNull: false
+            allowNull: false,
+            defaultValue: false
+        },
+
+        has_created: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
         },
 
         userId: {
