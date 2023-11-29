@@ -24,7 +24,6 @@ app.use(express.static('org_applications'));
 app.use(express.static('cor'))
 app.use(express.static('templates'));
 
-
 // Routes
 const usersRouter = require('./routes/Users');
 app.use('/auth', usersRouter);
