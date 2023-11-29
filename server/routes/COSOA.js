@@ -3,6 +3,15 @@ const router = express.Router();
 const { COSOA_Members, Org_Application, Organization, Application_Period, Requirements } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
 const { Op, Sequelize } = require('sequelize');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 
 const Acronyms = {
