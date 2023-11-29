@@ -260,6 +260,7 @@ router.get('/org_application_status', validateToken, async (req, res) => {
                 orgId: org.id,
             },
         });
+        
         const advisers = await Advisers.findAll({
             where: {
                 orgId: org.id,
