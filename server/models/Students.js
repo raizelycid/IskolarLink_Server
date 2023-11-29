@@ -98,5 +98,13 @@ module.exports = (sequelize, DataTypes) => {
         });
     };
 
+    Students.associate = (models) => {
+        Students.belongsTo(models.Users,{
+            foreignKey:"userId",
+            onDelete: 'CASCADE',
+            as:'user'
+        })
+    }
+
     return Students;
 };
