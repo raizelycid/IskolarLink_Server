@@ -567,6 +567,8 @@ router.post('/fe2/:org_applicationId/:requirementId', validateToken, async (req,
 
 // Update an Org_Application application_status to Accredited/Revalidated
 router.post('/accredit/:org_applicationId', validateToken, async (req, res) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    
     const cosoa_member = await COSOA_Members.findOne({
         where: {
             studentId: req.decoded.student_id
