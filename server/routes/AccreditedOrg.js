@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Organization, Org_Application, Advisers, Requirements, Users, Membership, Students, Socials, Org_Announcement } = require('../models');
+const validateToken = require('../middleware/AuthMiddleware');
 
 router.get('/:orgId', async (req, res) => {
     const {orgId} = req.params;
@@ -42,6 +43,45 @@ router.get('/get_announcements/:orgId', async (req, res) => {
         res.json(err);
     }
 });
+
+router.get('/has_joined/:orgId', validateToken , async (req,res)=>{
+    const {student_id} = req.decoded
+    const {orgId} = req.params
+
+    const membership = await Membership.findOne({
+        where:{studentId:student_id, orgId:orgId}
+    })
+
+    if(membership){
+        return res.json({applied:true})
+    }else{
+        return res.json({applied:false})
+    }
+})
+
+router.post('/delete_membership/:orgId', validateToken, async (req,res)=>{
+    const {student_id} = req.decoded;
+    const {orgId} = req.params;
+
+    console.log("Finding Membership...")
+
+    const membership = await Membership.findOne({
+        where:{studentId:student_id, orgId:orgId}
+    })
+
+
+    let message;
+
+    if(membership.status === "Pending"){
+        message = "Your membership application has now been removed."
+    }else{
+        message = "You membership has now been removed."
+    }
+
+    await membership.destroy();
+
+    res.json({success:message})
+})
 
 
 module.exports = router;
