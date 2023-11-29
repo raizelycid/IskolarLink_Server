@@ -134,11 +134,10 @@ router.post('/update_profile', validateToken, async (req, res) => {
 
             // double check if the cor is already uploaded in cor folder
 
-            
         }
 
 
-        if(description !== ""){
+        if(description){
             await Users.update({
                 description: description
             },{
