@@ -6,147 +6,192 @@ const {Op} = require('sequelize')
 
 
 // Route to create a COSOA member
-router.post('/create_cosoa_member', validateToken, async (req, res) => {
-    try {
-      console.log("starting process")
-      // Get email from req.body
-      const { email, position } = req.body;
-  
-      // Get id and role from req.decoded
-      const { student_id, role } = req.decoded;
-  
-      // Check if the user is a COSOA member and has an allowed position
-      if (role !== 'student' || !student_id) {
-        return res.status(400).json({ error: 'You are not authorized to create a COSOA member.' });
-      }
+router.post("/create_cosoa_member", validateToken, async (req, res) => {
+  try {
+    console.log("starting process");
+    // Get email from req.body
+    const { email, position } = req.body;
 
-      console.log("PASS 1")
-  
+    // Get id and role from req.decoded
+    const { student_id, role } = req.decoded;
+
+    console.log("PASS 1");
+
+    if (role !== "student" || !student_id) {
+      return res
+        .status(400)
+        .json({ error: "You are not authorized to create a COSOA member." });
+    } else {
       // Check if the student's position is one of the allowed positions
-      const allowedPositions = ['Chairperson', 'Chairperson (Asst.)', 'Vice Chairperson', 'Vice Chairperson (Asst.)'];
-  
+      const allowedPositions = [
+        "Chairperson",
+        "Chairperson (Asst.)",
+        "Vice Chairperson",
+        "Vice Chairperson (Asst.)",
+      ];
+
       // Find the student's position from the COSOA_Members table based on their ID
       const cosoaMember = await COSOA_Members.findOne({
-        where: { studentId: student_id }
+        where: { studentId: student_id },
       });
-      console.log(student_id)
+      console.log(student_id);
 
-      console.log(cosoaMember)
+      console.log(cosoaMember);
 
-      console.log("PASS 2")
-  
+      console.log("PASS 2");
+
       if (!cosoaMember || !allowedPositions.includes(cosoaMember.position)) {
-        return res.status(400).json({ error: 'You are not authorized to create a COSOA member.' });
-      }
+        return res
+          .status(400)
+          .json({ error: "You are not authorized to create a COSOA member." });
+      } else {
+        console.log("PASS 3");
 
-      console.log("PASS 3")
-  
-      // Find the student using the provided email
-      const user = await Users.findOne({
-        where: { email: {
-            [Op.like]:email
-        } }
-      });
+        // Find the student using the provided email
+        const user = await Users.findOne({
+          where: {
+            email: {
+              [Op.like]: email,
+            },
+          },
+        });
 
-      console.log("PASS 4")
-  
-      if (!user) {
-        return res.status(400).json({ error: 'User not found with the provided email.' });
-      }
+        console.log("PASS 4");
 
-      console.log("PASS 5")
-  
-      // Check if the user's is_verified is true
-      const student = await Students.findOne({
-        where: { userId: user.id }
-      });
+        if (!user) {
+          return res
+            .status(400)
+            .json({ error: "User not found with the provided email." });
+        } else {
+          console.log("PASS 5");
 
-      console.log("PASS 6")
-  
-      if (!student || !student.is_verified) {
-        return res.status(400).json({ error: 'User is not verified or is not a student.' });
-      }
+          // Check if the user's is_verified is true
+          const student = await Students.findOne({
+            where: { userId: user.id },
+          });
 
-      console.log("PASS 7")
-  
-      // Check if a COSOA member with the same studentId exists
-      const existingCOSOAMember = await COSOA_Members.findOne({
-        where: { studentId: student.id }
-      });
+          console.log("PASS 6");
 
-      console.log("PASS 8")
-  
-      if (existingCOSOAMember) {
-        return res.status(400).json({ error: 'A COSOA member already exists for this student.' });
-      }
+          if (!student || !student.is_verified) {
+            return res
+              .status(400)
+              .json({ error: "User is not verified or is not a student." });
+          } else {
+            console.log("PASS 7");
 
-      console.log("PASS 9")
-  
-      // Create a COSOA member with the student's id and position
-      await COSOA_Members.create({
-        position: position, 
-        studentId: student.id
-      });
-
-      console.log("PASS 10")
-
-      student.is_cosoa = true
-
-      await student.save();
-
-      console.log("PASS 11")
-
-  
-      return res.status(201).json({ success: 'COSOA member created successfully.' });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
-
-  // Route to get all COSOA members with names and profile pictures
-router.get('/get_members', validateToken, async (req, res) => {
-        try {
-          // Get all COSOA members from the COSOA_Members table
-          const cosoaMembers = await COSOA_Members.findAll();
-      
-          // Initialize an array to store the results
-          const result = [];
-      
-          // Iterate through the COSOA members and retrieve additional information
-          for (const cosoaMember of cosoaMembers) {
-            const student = await Students.findOne({
-              where: { id: cosoaMember.studentId }
+            // Check if a COSOA member with the same studentId exists
+            const existingCOSOAMember = await COSOA_Members.findOne({
+              where: { studentId: student.id },
             });
-      
-            if (student) {
-              const user = await Users.findOne({
-                where: { id: student.userId }
+
+            console.log("PASS 8");
+
+            if (existingCOSOAMember) {
+              return res
+                .status(400)
+                .json({
+                  error: "A COSOA member already exists for this student.",
+                });
+            } else {
+              console.log("PASS 9");
+
+              // Create a COSOA member with the student's id and position
+              await COSOA_Members.create({
+                position: position,
+                studentId: student.id,
               });
-      
-              if (user) {
-                // Extract the relevant information
-                const memberInfo = {
-                  id: cosoaMember.id, // COSOA member id
-                  student_id: student.id, // Student id
-                  name: `${student.student_Fname} ${student.student_Lname}`,
-                  position: cosoaMember.position,
-                  profile_picture: user.profile_picture
-                };
-      
-                // Add the member's information to the result array
-                result.push(memberInfo);
-              }
+
+              console.log("PASS 10");
+
+              student.is_cosoa = true;
+
+              await student.save();
+
+              console.log("PASS 11");
+
+              return res
+                .status(201)
+                .json({ success: "COSOA member created successfully." });
             }
           }
-      
-          // Return the result as JSON
-          res.status(200).json(result);
-        } catch (error) {
-          console.error(error);
-          res.status(500).json({ error: 'Internal Server Error' });
         }
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+  // Route to get all COSOA members with names and profile pictures
+  router.get('/get_members', validateToken, async (req, res) => {
+    try {
+      // Define the order of positions
+      const positionsOrder = [
+        'Chairperson',
+        'Chairperson (Asst.)',
+        'Vice Chairperson',
+        'Vice Chairperson (Asst.)',
+        'Secretary-General',
+        'Executive Director',
+        'External Affairs',
+        'Internal Affairs',
+        'Document Management',
+        'Internal Performance Evaluator',
+        'Legal Affairs',
+        'Social Media Management',
+        'Application Evaluator'
+      ];
+  
+      // Get all COSOA members from the COSOA_Members table
+      const cosoaMembers = await COSOA_Members.findAll();
+  
+      // Initialize an array to store the results
+      const result = [];
+  
+      // Iterate through the COSOA members and retrieve additional information
+      for (const cosoaMember of cosoaMembers) {
+        const student = await Students.findOne({
+          where: { id: cosoaMember.studentId }
+        });
+  
+        if (student) {
+          const user = await Users.findOne({
+            where: { id: student.userId }
+          });
+  
+          if (user) {
+            // Extract the relevant information
+            const memberInfo = {
+              id: cosoaMember.id, // COSOA member id
+              student_id: student.id, // Student id
+              name: `${student.student_Fname} ${student.student_Lname}`,
+              position: cosoaMember.position,
+              profile_picture: user.profile_picture
+            };
+  
+            // Add the member's information to the result array
+            result.push(memberInfo);
+          }
+        }
+      }
+  
+      // Sort the result array by position
+      result.sort((a, b) => {
+        const indexA = positionsOrder.indexOf(a.position);
+        const indexB = positionsOrder.indexOf(b.position);
+        return indexA - indexB;
+      });
+  
+      // Return the sorted result as JSON
+      res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   });
+  
 
 
 router.put('/update_cosoa_member/:memberId', validateToken, async (req, res) => {

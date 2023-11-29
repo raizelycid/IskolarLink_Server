@@ -787,7 +787,7 @@ router.put('/application_period', validateToken, async (req, res) => {
         }
     });
     if(!cosoa_member){
-        res.json(`You are not authorized to update the Application Period!`)
+        return res.json(`You are not authorized to update the Application Period!`)
     }else{
     const application_period = await Application_Period.findOne({
         where: {

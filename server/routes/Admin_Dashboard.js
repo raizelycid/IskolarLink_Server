@@ -4,6 +4,8 @@ const { Organization, Org_Application, Advisers, Requirements, Users, Membership
 const { Op, where } = require('sequelize');
 const fs = require('fs');
 const validateToken = require('../middleware/AuthMiddleware');
+const path = require('path');
+const fsp = require('fs/promises')
 
 
 
@@ -76,31 +78,36 @@ router.get('/get_web_admin', async (req,res)=> {
 
 // get students with cor but not verified
 router.get('/get_students', async (req, res) => {
-    try{
-        const students = await Students.findAll({
-            attributes: ['userId', 'id', 'student_Fname', 'student_Lname', 'cor', 'cor_remarks', 'is_verified', 'createdAt'],
-        });
+  try {
+    const students = await Students.findAll({
+      attributes: ['id', 'student_Fname', 'student_Lname', 'cor', 'cor_remarks', 'is_verified', 'createdAt'],
+      include: [
+        {
+          model: Users,
+          attributes: ['email'],
+          as:'user'
+        },
+      ],
+    });
 
-        //get their email from Users table
-        const studentIds = await Users.findAll({
-            attributes: ['email'],
-            where: {id: students.map(student => student.userId)}
-        });
+    // Process the students and their associated email addresses
+    const studentsWithIds = students.map(student => {
+      const createdAt = new Date(student.createdAt);
+      const currentDate = new Date();
+      const daysDifference = Math.floor((currentDate - createdAt) / (1000 * 60 * 60 * 24));
+      return {
+        ...student.dataValues,
+        days: daysDifference
+      };
+    });
 
-        // merge the studentIds from their respective students
-        const studentsWithIds = students.map((student, index) => {
-            const createdAt = new Date(student.createdAt);
-            const currentDate = new Date();
-            const daysDifference = Math.floor((currentDate - createdAt) / (1000 * 60 * 60 * 24));
-            return {...student.dataValues, email: studentIds[index].email, days: daysDifference};
-        });
-
-        res.json(studentsWithIds);
-        
-    }catch(err){
-        res.json(err);
-    }
+    res.json(studentsWithIds);
+  } catch (err) {
+    res.json(err);
+  }
 });
+
+
 
 
 // update student's is_verified to true and delete their cor
@@ -301,6 +308,36 @@ router.post("/update_web_admin", validateToken, async (req, res) => {
       }
     }
   });
+
+
+router.post('/start_semester',validateToken, async (req, res)=>{
+  try{
+
+    let dirpath = './cor'
+    const cor_files = await fsp.readdir(dirpath)
+
+      
+    const deleteFilePromises = cor_files.map(file =>
+      fsp.unlink(path.join(dirpath, file)),
+    );
+
+    await Promise.all(deleteFilePromises);
+
+
+    const students = await Students.findAll();
+    
+    // Loop through the students and update each one
+    for (const student of students) {
+      if(student.userId !== req.decoded.id){
+      await student.update({ is_verified: false });
+      }
+    }
+
+    res.json({success:"You have successfully started the semester!"})
+  }catch(err){
+    res.json(err)
+  }
+})
 
 
 
