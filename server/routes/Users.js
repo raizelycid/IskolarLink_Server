@@ -121,7 +121,7 @@ router.post('/login', async (req, res) => {
                     if(user.role === "student"){
                         console.log("Student logged in!")
                         const name = student.student_Fname + " " + student.student_Lname;
-                        const accessToken = jwt.sign({ id: user.id, username: name, role: user.role, student_id: student.id, is_verified: student.is_verified, is_cosoa: student.is_cosoa, is_web_admin: student.is_web_admin }, 'spongebobsquarepants', { expiresIn: expiry });
+                        const accessToken = jwt.sign({ id: user.id, username: name, role: user.role, student_id: student.id, is_verified: student.is_verified, is_cosoa: student.is_cosoa, is_web_admin: student.is_web_admin, has_created: student.has_created }, 'spongebobsquarepants', { expiresIn: expiry });
                         res.cookie("accessToken", accessToken, { httpOnly: true, sameSite: 'none', secure: true });
                         res.json({student:`Student logged in!`});
                     }else if(user.role === "organization"){
@@ -151,7 +151,7 @@ router.post('/login', async (req, res) => {
 router.get('/', validateToken, async (req, res) => {
     const { id, username, role} = req.decoded;
     if(role === "student"){
-        const { student_id, is_verified, is_cosoa, is_web_admin } = req.decoded;
+        const { student_id, is_verified, is_cosoa, is_web_admin, has_created } = req.decoded;
         try{
             const user = await Users.findOne({
                 where: {
@@ -159,7 +159,7 @@ router.get('/', validateToken, async (req, res) => {
                 }
             });
             const profile_picture = user.profile_picture;
-            res.json({ id: id, username: username, profile_picture: profile_picture, role: role, student_id: student_id, is_verified: is_verified, is_cosoa: is_cosoa, is_web_admin: is_web_admin });
+            res.json({ id: id, username: username, profile_picture: profile_picture, role: role, student_id: student_id, is_verified: is_verified, is_cosoa: is_cosoa, is_web_admin: is_web_admin, has_created:has_created });
         }catch(err){
             console.log(err);
             res.json(err);

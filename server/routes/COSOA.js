@@ -787,7 +787,7 @@ router.put('/application_period', validateToken, async (req, res) => {
         }
     });
     if(!cosoa_member){
-        res.json(`You are not authorized to update the Application Period!`)
+        return res.json(`You are not authorized to update the Application Period!`)
     }else{
     const application_period = await Application_Period.findOne({
         where: {
@@ -931,31 +931,24 @@ router.post('/feedback/:org_applicationId', validateToken, async (req, res) => {
 });
 
 router.post('/reject/:org_applicationId', validateToken, async (req, res) => {
-    const { feedback } = req.body;
     const cosoa_member = await COSOA_Members.findOne({
         where: {
             studentId: req.decoded.student_id
         }
     });
-    const pos = cosoa_member.position;
-    const cosoa_id = cosoa_member.id;
     const org_application = await Org_Application.findOne({
         where: {
             id: req.params.org_applicationId
         }
     });
-    const org_org_id = org_application.orgId;
     //if pos is not null
-    if (pos != null){
+    if (cosoa_member){
         try{
-            const org_applicationId = req.params.org_applicationId;
-            await Org_Application.create({
-                cosoaId: cosoa_id,
-                orgId: org_org_id,
-                application_status: 'Rejected',
-                feedback: feedback,
+            const org = await Organization.findOne({
+                where:{id:org_application.orgId}
             })
-            res.json(`Org Application with id ${org_applicationId} is now rejected!`);
+            org.destroy()
+            res.json({success: "Organization has been rejected"});
         }catch(err){
             res.json(err);
         }
