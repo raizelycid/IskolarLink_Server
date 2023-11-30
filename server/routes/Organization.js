@@ -109,7 +109,7 @@ router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
 
 router.post('/revalidation', [validateToken, checkPeriod], async (req, res) => {
     const { id} = req.decoded;
-    const { org_name, jurisdiction, subjurisdiction, type, advisers} = req.body;
+    const { orgName, jurisdiction, subjurisdiction, type, advisers} = req.body;
     try{
         const org = await Organization.findOne({
             where: {
@@ -118,7 +118,7 @@ router.post('/revalidation', [validateToken, checkPeriod], async (req, res) => {
         });
         if (org_name != org.org_name || jurisdiction != org.jurisdiction || sub_jurisdiction != org.sub_jurisdiction || type != org.type){
             await Organization.update({
-                org_name: org_name,
+                org_name: orgName,
                 jurisdiction: jurisdiction,
                 subjurisdiction: subjurisdiction,
                 type: type,
