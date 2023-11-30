@@ -116,7 +116,7 @@ router.post('/revalidation', [validateToken, checkPeriod], async (req, res) => {
                 userId: id
             }
         });
-        if (org_name != org.org_name || jurisdiction != org.jurisdiction || sub_jurisdiction != org.sub_jurisdiction || type != org.type){
+        if (orgName != org.org_name || jurisdiction != org.jurisdiction || subjurisdiction != org.subjurisdiction || type != org.type){
             await Organization.update({
                 org_name: orgName,
                 jurisdiction: jurisdiction,
