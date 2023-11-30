@@ -116,22 +116,18 @@ router.post('/revalidation', [validateToken, checkPeriod], async (req, res) => {
                 userId: id
             }
         });
-        if (org_name !== org.org_name){
-            org.org_name = org_name;
+        if (org_name != org.org_name || jurisdiction != org.jurisdiction || sub_jurisdiction != org.sub_jurisdiction || type != org.type){
+            await Organization.update({
+                org_name: org_name,
+                jurisdiction: jurisdiction,
+                subjurisdiction: subjurisdiction,
+                type: type,
+            },{
+                where: {
+                    userId: id
+                }
+            });
         }
-        if (jurisdiction !== org.jurisdiction){
-            org.jurisdiction = jurisdiction;
-        }
-        if (subjurisdiction !== org.subjurisdiction){
-            org.subjurisdiction = subjurisdiction;
-        }
-        if (type !== org.type){
-            org.type = type
-        }
-
-        org.save()
-
-
         const org_application = await Org_Application.create({
             orgId: org.id,
             application_status: 'Pending',
