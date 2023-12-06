@@ -7,6 +7,14 @@ const fs =require('fs');
 const upload = require('express-fileupload');
 const bcrpyt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 router.use(cookieParser());
 router.use(upload());
@@ -134,11 +142,10 @@ router.post('/update_profile', validateToken, async (req, res) => {
 
             // double check if the cor is already uploaded in cor folder
 
-            
         }
 
 
-        if(description !== ""){
+        if(description){
             await Users.update({
                 description: description
             },{

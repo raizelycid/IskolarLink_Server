@@ -2,6 +2,14 @@ const express = require('express');
 const router = express.Router();
 const { Students, COSOA_Members } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 // Set is_verified to true
 router.put('/verify/:studentId', validateToken, async (req, res) => {

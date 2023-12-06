@@ -6,6 +6,14 @@ const fs = require('fs');
 const validateToken = require('../middleware/AuthMiddleware');
 const path = require('path');
 const fsp = require('fs/promises')
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 
 

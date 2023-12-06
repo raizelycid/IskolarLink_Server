@@ -3,6 +3,15 @@ const router = express.Router();
 const { COSOA_Members, Org_Application, Organization, Application_Period, Requirements } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
 const { Op, Sequelize } = require('sequelize');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 
 const Acronyms = {
@@ -558,16 +567,19 @@ router.post('/fe2/:org_applicationId/:requirementId', validateToken, async (req,
 
 // Update an Org_Application application_status to Accredited/Revalidated
 router.post('/accredit/:org_applicationId', validateToken, async (req, res) => {
+
     const cosoa_member = await COSOA_Members.findOne({
         where: {
             studentId: req.decoded.student_id
         }
     });
+    console.log("FINDING ORG APPLICATION")
     const org_application = await Org_Application.findOne({
         where: {
             id: req.params.org_applicationId
         }
     });
+    console.log("FOUND. FINDING ORGANIZATION")
     const org = await Organization.findOne({
         where: {
             id: org_application.orgId

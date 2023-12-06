@@ -3,6 +3,14 @@ const router = express.Router();
 const { Org_Application, Advisers } = require('../models');
 const fs = require('fs');
 const validateToken = require('../middleware/AuthMiddleware')
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 
 

@@ -8,7 +8,6 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
-
 app.use(cors(
   {
     origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
@@ -24,7 +23,6 @@ app.use(express.static('temp'));
 app.use(express.static('org_applications'));
 app.use(express.static('cor'))
 app.use(express.static('templates'));
-
 
 // Routes
 const usersRouter = require('./routes/Users');

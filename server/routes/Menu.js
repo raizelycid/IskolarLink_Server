@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const validateToken = require('../middleware/AuthMiddleware');
 const cors = require('cors');
 
+
 router.use(cookieParser());
 
 router.use(cors(
