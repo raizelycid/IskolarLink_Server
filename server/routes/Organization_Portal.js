@@ -8,6 +8,14 @@ const cookieParser = require('cookie-parser');
 // import all necessary libarry for file upload
 const fs = require('fs');
 const fileUpload = require('express-fileupload');
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 router.use(fileUpload());
 
@@ -74,6 +82,20 @@ router.get('/organization/membership', validateToken, async (req, res) => {
             attributes:['id'],
             where: {userId: id}
         });
+
+        let new_subjurisdiction = "";
+        for (let i = 0; i < organization.length; i++){
+            if(organization[i].subjurisdiction !== 'University-Wide'){
+                //Get only the last word in the string
+                new_subjurisdiction = organization[i].subjurisdiction.split(" ");
+                new_subjurisdiction = new_subjurisdiction[new_subjurisdiction.length - 1];
+            }
+            else{
+                new_subjurisdiction = "U-Wide"
+            }
+            organization[i].dataValues.subjurisdiction = new_subjurisdiction;
+            new_subjurisdiction = "";
+        }
 
         const members = await Membership.findAll({
             where: {orgId: organization.id, status: 'Pending'}

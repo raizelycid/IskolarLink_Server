@@ -4,6 +4,14 @@ const { Organization, Org_Application, Advisers, Requirements, Users, Membership
 const { Op, where } = require('sequelize');
 const fs = require('fs');
 const validateToken = require('../middleware/AuthMiddleware');
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 
 router.get('/section2', async (req,res)=>{

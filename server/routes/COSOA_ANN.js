@@ -5,6 +5,14 @@ const multer = require('multer');
 const upload = require('express-fileupload');
 const fs = require('fs');
 const e = require('express');
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 router.use(upload());
 

@@ -2,7 +2,15 @@ const express = require('express');
 const router = express.Router();
 const { Organization, Users, Students, COSOA_Members, Org_Application, Requirements, Advisers, Sequelize } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
-const {Op} = require('sequelize')
+const {Op} = require('sequelize');
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 
 // Route to create a COSOA member

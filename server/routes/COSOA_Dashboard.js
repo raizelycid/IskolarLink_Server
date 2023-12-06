@@ -1,6 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { Organization, Users, Students, COSOA_Members, Org_Application, Requirements, Advisers, Sequelize } = require('../models');
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 
 router.get('/get_orgs', async (req, res) => {

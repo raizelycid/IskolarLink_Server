@@ -6,6 +6,16 @@ const upload = require('express-fileupload');
 const { ExpressFileuploadValidator} = require('express-fileupload-validator');
 const checkPeriod = require('../middleware/App_Period');
 const fs =require('fs');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+router.use(cookieParser());
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 
 const fileUploadValidator = new ExpressFileuploadValidator({
