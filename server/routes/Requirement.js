@@ -1,14 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const { Organization, Org_Application, Advisers, Requirements } = require('../models');
-const validateToken = require('../middleware/AuthMiddleware');
-const cookieParser = require('cookie-parser');
+const validateToken = require('../middleware/AuthMiddleware');;
 const checkPeriod = require('../middleware/App_Period');
 const fs =require('fs');
 const { ExpressFileuploadValidator} = require('express-fileupload-validator');
 const upload = require('express-fileupload');
 const {PDFDocument} = require('pdf-lib');
 const {readFile,writeFile} = require('fs/promises');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+router.use(cookieParser());
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
+
 
 router.put('/update_status/:id', [validateToken, checkPeriod], async (req, res) => {
     try{

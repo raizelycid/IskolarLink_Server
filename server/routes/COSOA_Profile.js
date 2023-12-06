@@ -4,6 +4,14 @@ const { Users, Students, COSOA_Members, COSOA_Profile, Application_Period } = re
 const fs = require('fs');
 const { ExpressFileuploadValidator} = require('express-fileupload-validator');
 const upload = require('express-fileupload');
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 
 router.use(upload());

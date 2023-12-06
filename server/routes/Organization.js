@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { Organization, Org_Application, Advisers, Requirements, Users,Students } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
-const cookieParser = require('cookie-parser');
 const checkPeriod = require('../middleware/App_Period');
 const fs =require('fs');
 const { ExpressFileuploadValidator} = require('express-fileupload-validator');
@@ -10,6 +9,16 @@ const upload = require('express-fileupload');
 const {PDFDocument} = require('pdf-lib');
 const {readFile,writeFile} = require('fs/promises');
 const {Op} = require('sequelize');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+router.use(cookieParser());
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 
 router.use(upload());
@@ -32,7 +41,6 @@ const fileUploadValidator = new ExpressFileuploadValidator({
 
 const forms = ['AD001','AD002','AD003','AD004','AD004X','AD005','AD006','AD007','AD009','AF001']
 
-router.use(cookieParser());
 
 router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
     const { orgName, jurisdiction, subjurisdiction, orgType, advisers} = req.body;
@@ -109,18 +117,18 @@ router.post('/addorg', [validateToken, checkPeriod], async (req, res) => {
 
 router.post('/revalidation', [validateToken, checkPeriod], async (req, res) => {
     const { id} = req.decoded;
-    const { org_name, jurisdiction, sub_jurisdiction, type, advisers} = req.body;
+    const { orgName, jurisdiction, subjurisdiction, type, advisers} = req.body;
     try{
         const org = await Organization.findOne({
             where: {
                 userId: id
             }
         });
-        if (org_name != org.org_name || jurisdiction != org.jurisdiction || sub_jurisdiction != org.sub_jurisdiction || type != org.type){
+        if (orgName != org.org_name || jurisdiction != org.jurisdiction || subjurisdiction != org.subjurisdiction || type != org.type){
             await Organization.update({
-                org_name: org_name,
+                org_name: orgName,
                 jurisdiction: jurisdiction,
-                sub_jurisdiction: sub_jurisdiction,
+                subjurisdiction: subjurisdiction,
                 type: type,
             },{
                 where: {

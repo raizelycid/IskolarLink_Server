@@ -3,10 +3,9 @@ const router = express.Router();
 const { Users, Students, Organization, Org_Application } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const cookieParser = require('cookie-parser');
 const validateToken = require('../middleware/AuthMiddleware');
+const cookieParser = require('cookie-parser');
 const cors = require('cors');
-
 router.use(cookieParser());
 
 router.use(cors(

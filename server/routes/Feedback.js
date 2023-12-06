@@ -3,6 +3,14 @@ const router = express.Router();
 const { Feedback } = require('../models');
 const { Op } = require('sequelize');
 const fs = require('fs');
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 // add feedback. fullName and email is optional
 router.post('/add', async (req, res) => {

@@ -5,6 +5,14 @@ const {readFile,writeFile} = require('fs/promises');
 const fs = require('fs');
 const { Organization, Advisers } = require('../models');
 const validateToken = require('../middleware/AuthMiddleware');
+const cors = require('cors');
+
+router.use(cors(
+    {
+        origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app'],
+        credentials: true
+    }
+));
 
 
 router.post('/generate_AF001', async (req, res ) => {
