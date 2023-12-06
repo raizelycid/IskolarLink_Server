@@ -8,6 +8,7 @@ const upload = require('express-fileupload');
 const bcrpyt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const e = require('express');
 
 router.use(cors(
     {
@@ -216,7 +217,6 @@ router.post('/update_profile', validateToken, async (req, res) => {
 
 router.post('/submit_cor', validateToken, async (req, res) => {
     const {student_id} = req.decoded;
-    const {cor} = req.files
 
     try{
             const file2 = req.files.cor;
@@ -234,7 +234,7 @@ router.post('/submit_cor', validateToken, async (req, res) => {
                         cor_remarks:null
                     },{
                         where: {
-                            userId: id
+                            id: student_id
                         }
                     });
                 }
@@ -247,6 +247,33 @@ router.post('/submit_cor', validateToken, async (req, res) => {
         }catch(err){
             res.json(err);
         }
+});
+
+
+router.get('/check_cor', validateToken, async (req, res) => {
+    const {student_id} = req.decoded;
+
+    try{
+        const student = await Students.findOne({
+            where: {
+                id: student_id
+            }
+        });
+
+        if(student.cor && student.cor_remarks === null){
+            res.json({process: 'pending'});
+        }else if(student.cor && student.cor_remarks !== null){
+            res.json({process: 'returned', remarks: student.cor_remarks});
+        }else if(student.cor === null && student.is_verified === true){
+            res.json({process: 'verified'});
+        }else if(student.cor === null){
+            res.json({process: 'not submitted'});
+        }else{
+            res.json({process: 'error'});
+        }
+    }catch(err){
+        res.json(err);
+    }
 });
 
 
