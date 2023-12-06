@@ -191,16 +191,11 @@ router.post('/update_profile', validateToken, async (req, res) => {
         console.log(linkedin)
 
         if(socials){
-            await Socials.update({
-                facebook: facebook,
-                twitter: twitter,
-                instagram: instagram,
-                linkedin: linkedin
-            },{
-                where: {
-                    userId: id
-                }
-            });
+            socials.facebook = facebook;
+            socials.twitter = twitter;
+            socials.instagram = instagram;
+            socials.linkedin = linkedin;
+            await socials.save();
         }else{
             await Socials.create({
                 facebook: facebook,
@@ -212,6 +207,42 @@ router.post('/update_profile', validateToken, async (req, res) => {
         }
 
         res.json({success:'Successfully updated profile'});
+
+        }catch(err){
+            res.json(err);
+        }
+});
+
+
+router.post('/submit_cor', validateToken, async (req, res) => {
+    const {student_id} = req.decoded;
+    const {cor} = req.files
+
+    try{
+            const file2 = req.files.cor;
+            // get only the file extension of the file
+            const fileExtension = file2.name.split('.').pop();
+            const fileName2 = `${id}.${fileExtension}`;
+            const fullPath2 = `cor/${fileName2}`;
+            file2.mv(fullPath2, async (err) => {
+                if(err){
+                    console.log(err);
+                    res.json(err);
+                }else{
+                    await Students.update({
+                        cor: fileName2,
+                        cor_remarks:null
+                    },{
+                        where: {
+                            userId: id
+                        }
+                    });
+                }
+            });
+
+            res.json({success:'Successfully submitted cor'});
+
+            // double check if the cor is already uploaded in cor folder
 
         }catch(err){
             res.json(err);
