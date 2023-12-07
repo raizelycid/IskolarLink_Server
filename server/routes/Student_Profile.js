@@ -101,6 +101,10 @@ router.post('/update_profile', validateToken, async (req, res) => {
     try{
 
         console.log("trying to look for profile picture")
+        console.log(req.files)
+        //check if a file is uploaded
+
+        if(req.files){
         if(req.files.profile_picture){
             console.log("attempting to update profile picture")
             const file = req.files.profile_picture;
@@ -120,7 +124,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
                     });
                 }
             });
-        }
+        }}
 
 
         console.log("trying to look for description")
