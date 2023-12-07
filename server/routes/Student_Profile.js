@@ -100,6 +100,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
     console.log(req.body)
     try{
         if(req.files.profile_picture){
+            console.log("attempting to update profile picture")
             const file = req.files.profile_picture;
             const fileName = `${id}_${file.name}`
             const fullPath = `./public/images/${fileName}`;
@@ -119,44 +120,24 @@ router.post('/update_profile', validateToken, async (req, res) => {
             });
         }
 
-        if(req.files.cor){
-            const file2 = req.files.cor;
-            // get only the file extension of the file
-            const fileExtension = file2.name.split('.').pop();
-            const fileName2 = `${id}.${fileExtension}`;
-            const fullPath2 = `cor/${fileName2}`;
-            file2.mv(fullPath2, async (err) => {
-                if(err){
-                    console.log(err);
-                    res.json(err);
-                }else{
-                    await Students.update({
-                        cor: fileName2,
-                        cor_remarks:null
-                    },{
-                        where: {
-                            userId: id
-                        }
-                    });
-                }
-            });
-
-            // double check if the cor is already uploaded in cor folder
-
-        }
 
 
         if(description){
+            console.log("attempting to update description")
             await Users.update({
                 description: description
             },{
                 where: {
                     id: id
                 }
+            })
+            .catch(err => {
+                console.log(err)
             });
         }
 
         if(currentPassword  && newPassword){
+            console.log("attempting to update password")
             const user = await Users.findOne({
                 where: {
                     id: id
@@ -181,6 +162,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
         }
 
         const socials = await Socials.findOne({
+
             where: {
                 userId: id
             }
@@ -192,12 +174,14 @@ router.post('/update_profile', validateToken, async (req, res) => {
         console.log(linkedin)
 
         if(socials){
+            console.log("attempting to update socials")
             socials.facebook = facebook;
             socials.twitter = twitter;
             socials.instagram = instagram;
             socials.linkedin = linkedin;
             await socials.save();
         }else{
+            console.log("attempting to create socials")
             await Socials.create({
                 facebook: facebook,
                 twitter: twitter,
