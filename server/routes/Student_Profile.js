@@ -99,6 +99,8 @@ router.post('/update_profile', validateToken, async (req, res) => {
     const {description, currentPassword, newPassword, facebook, twitter, instagram, linkedin} = req.body;
     console.log(req.body)
     try{
+
+        console.log("trying to look for profile picture")
         if(req.files.profile_picture){
             console.log("attempting to update profile picture")
             const file = req.files.profile_picture;
@@ -121,7 +123,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
         }
 
 
-
+        console.log("trying to look for description")
         if(description){
             console.log("attempting to update description")
             await Users.update({
@@ -136,6 +138,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
             });
         }
 
+        console.log("trying to look for password")
         if(currentPassword  && newPassword){
             console.log("attempting to update password")
             const user = await Users.findOne({
@@ -161,6 +164,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
             }
         }
 
+        console.log("trying to look for socials")
         const socials = await Socials.findOne({
 
             where: {
@@ -173,6 +177,8 @@ router.post('/update_profile', validateToken, async (req, res) => {
         console.log(instagram)
         console.log(linkedin)
 
+
+        console.log("trying to update/create socials")
         if(socials){
             console.log("attempting to update socials")
             socials.facebook = facebook;
