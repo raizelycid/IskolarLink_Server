@@ -203,6 +203,11 @@ router.post('/submit_cor', validateToken, async (req, res) => {
     const {id, student_id} = req.decoded;
 
     try{
+            if(!req.files){
+                res.json({error: 'No file uploaded'});
+                return;
+            }
+            console.log(req.files)
             const file2 = req.files.cor;
             // get only the file extension of the file
             const fileExtension = file2.name.split('.').pop();
