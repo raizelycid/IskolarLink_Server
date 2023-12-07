@@ -183,6 +183,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
 
 
         console.log("trying to update/create socials")
+        if(facebook || twitter || instagram || linkedin){
         if(socials){
             console.log("attempting to update socials")
             socials.facebook = facebook;
@@ -199,6 +200,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
                 linkedin: linkedin,
                 userId: id
             });
+        }
         }
 
         res.json({success:'Successfully updated profile'});
