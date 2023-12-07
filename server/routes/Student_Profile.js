@@ -216,7 +216,7 @@ router.post('/update_profile', validateToken, async (req, res) => {
 
 
 router.post('/submit_cor', validateToken, async (req, res) => {
-    const {student_id} = req.decoded;
+    const {id, student_id} = req.decoded;
 
     try{
             const file2 = req.files.cor;
