@@ -77,7 +77,7 @@ router.get('/get_orgs', async (req, res) => {
 router.get('/get_org/:id', async ( req, res) => {
 
     const Acc_Forms = ['AD001','AD002','AD003','AD004','AD005','AD006','AD007','AD008','AD009','AF001']
-    const Rev_Forms = ['RD001','RD002','RD003','RD004','RD004X','RD005','RD006','RD007','RD008','RD008X','RD010','RD011','RF001']
+    const Rev_Forms = ['RD001','RD002','RD003','RD004','RD005','RD006','RD007','RD008','RD009','RD010','RD011','RD012','RD013','RF001']
     try{
         const orgId = req.params.id;
         const org = await Organization.findOne({

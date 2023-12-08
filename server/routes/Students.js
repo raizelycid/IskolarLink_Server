@@ -257,6 +257,15 @@ router.get('/org_application_status', validateToken, async (req, res) => {
                 userId: id,
             }
         });
+
+        const user = await Users.findOne({
+            where: {
+                id: id,
+            }
+        });
+
+        org.dataValues.profile_picture = user.profile_picture;
+        
         const org_app = await Org_Application.findOne({
             where: {
                 orgId: org.id,
