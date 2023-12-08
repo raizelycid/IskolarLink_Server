@@ -64,7 +64,19 @@ router.get('/organization/members', validateToken, async (req, res) => {
             const student = await Students.findOne({
                 where: {id: members[i].studentId}
             });
+
+            let new_department = "";
+            new_department = student.department.split(" ");
+            new_department = new_department[new_department.length - 1];
+            student.dataValues.department = new_department;
             members[i].dataValues.details = student;
+
+            const user = await Users.findOne({
+                where: {id: student.userId}
+            });
+
+            members[i].dataValues.email = user.email;
+            members[i].dataValues.profile_picture = user.profile_picture;
         }
 
 
