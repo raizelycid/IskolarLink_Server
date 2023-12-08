@@ -263,7 +263,7 @@ router.get('/check_cor', validateToken, async (req, res) => {
 
         if(student.cor && student.cor_remarks === null){
             res.json({process: 'pending'});
-        }else if(student.cor && student.cor_remarks !== null){
+        }else if(!student.cor && student.cor_remarks !== null){
             res.json({process: 'returned', remarks: student.cor_remarks});
         }else if(student.cor === null && student.is_verified === true){
             res.json({process: 'verified'});
