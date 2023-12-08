@@ -8,6 +8,7 @@ const upload = require('express-fileupload');
 const bcrpyt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const e = require('express');
 
 router.use(cors(
     {
@@ -98,7 +99,14 @@ router.post('/update_profile', validateToken, async (req, res) => {
     const {description, currentPassword, newPassword, facebook, twitter, instagram, linkedin} = req.body;
     console.log(req.body)
     try{
+
+        console.log("trying to look for profile picture")
+        console.log(req.files)
+        //check if a file is uploaded
+
+        if(req.files){
         if(req.files.profile_picture){
+            console.log("attempting to update profile picture")
             const file = req.files.profile_picture;
             const fileName = `${id}_${file.name}`
             const fullPath = `./public/images/${fileName}`;
@@ -116,46 +124,27 @@ router.post('/update_profile', validateToken, async (req, res) => {
                     });
                 }
             });
-        }
-
-        if(req.files.cor){
-            const file2 = req.files.cor;
-            // get only the file extension of the file
-            const fileExtension = file2.name.split('.').pop();
-            const fileName2 = `${id}.${fileExtension}`;
-            const fullPath2 = `cor/${fileName2}`;
-            file2.mv(fullPath2, async (err) => {
-                if(err){
-                    console.log(err);
-                    res.json(err);
-                }else{
-                    await Students.update({
-                        cor: fileName2,
-                        cor_remarks:null
-                    },{
-                        where: {
-                            userId: id
-                        }
-                    });
-                }
-            });
-
-            // double check if the cor is already uploaded in cor folder
-
-        }
+        }}
 
 
+        console.log("trying to look for description")
         if(description){
+            console.log("attempting to update description")
             await Users.update({
                 description: description
             },{
                 where: {
                     id: id
                 }
+            })
+            .catch(err => {
+                console.log(err)
             });
         }
 
+        console.log("trying to look for password")
         if(currentPassword  && newPassword){
+            console.log("attempting to update password")
             const user = await Users.findOne({
                 where: {
                     id: id
@@ -179,7 +168,9 @@ router.post('/update_profile', validateToken, async (req, res) => {
             }
         }
 
+        console.log("trying to look for socials")
         const socials = await Socials.findOne({
+
             where: {
                 userId: id
             }
@@ -190,18 +181,18 @@ router.post('/update_profile', validateToken, async (req, res) => {
         console.log(instagram)
         console.log(linkedin)
 
+
+        console.log("trying to update/create socials")
+        if(facebook || twitter || instagram || linkedin){
         if(socials){
-            await Socials.update({
-                facebook: facebook,
-                twitter: twitter,
-                instagram: instagram,
-                linkedin: linkedin
-            },{
-                where: {
-                    userId: id
-                }
-            });
+            console.log("attempting to update socials")
+            socials.facebook = facebook;
+            socials.twitter = twitter;
+            socials.instagram = instagram;
+            socials.linkedin = linkedin;
+            await socials.save();
         }else{
+            console.log("attempting to create socials")
             await Socials.create({
                 facebook: facebook,
                 twitter: twitter,
@@ -210,12 +201,80 @@ router.post('/update_profile', validateToken, async (req, res) => {
                 userId: id
             });
         }
+        }
 
         res.json({success:'Successfully updated profile'});
 
         }catch(err){
             res.json(err);
         }
+});
+
+
+router.post('/submit_cor', validateToken, async (req, res) => {
+    const {id, student_id} = req.decoded;
+
+    try{
+            if(!req.files){
+                res.json({error: 'No file uploaded'});
+                return;
+            }
+            console.log(req.files)
+            const file2 = req.files.cor;
+            // get only the file extension of the file
+            const fileExtension = file2.name.split('.').pop();
+            const fileName2 = `${id}.${fileExtension}`;
+            const fullPath2 = `cor/${fileName2}`;
+            file2.mv(fullPath2, async (err) => {
+                if(err){
+                    console.log(err);
+                    res.json(err);
+                }else{
+                    await Students.update({
+                        cor: fileName2,
+                        cor_remarks:null
+                    },{
+                        where: {
+                            id: student_id
+                        }
+                    });
+                }
+            });
+
+            res.json({success:'Successfully submitted cor'});
+
+            // double check if the cor is already uploaded in cor folder
+
+        }catch(err){
+            res.json(err);
+        }
+});
+
+
+router.get('/check_cor', validateToken, async (req, res) => {
+    const {student_id} = req.decoded;
+
+    try{
+        const student = await Students.findOne({
+            where: {
+                id: student_id
+            }
+        });
+
+        if(student.cor && student.cor_remarks === null){
+            res.json({process: 'pending'});
+        }else if(!student.cor && student.cor_remarks !== null){
+            res.json({process: 'returned', remarks: student.cor_remarks});
+        }else if(student.cor === null && student.is_verified === true){
+            res.json({process: 'verified'});
+        }else if(student.cor === null){
+            res.json({process: 'not submitted'});
+        }else{
+            res.json({process: 'error'});
+        }
+    }catch(err){
+        res.json(err);
+    }
 });
 
 
