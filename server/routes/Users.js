@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Users, Students, Organization, Org_Application } = require('../models');
+const { Users, Students, Organization, Org_Application, OTP } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const validateToken = require('../middleware/AuthMiddleware');
@@ -22,9 +22,17 @@ router.post('/register', async (req, res) => {
         student_Mname,
         student_suffix,
         department,
-        year_level } = req.body;
+        year_level,
+        code } = req.body;
 
     try {
+        await OTP.destroy({
+            where: {
+                email: email,
+                code: code
+            }
+        });
+
         await bcrypt.hash(password, 10).then((hash) => {
             const user = Users.create({
                 email: email,
@@ -207,6 +215,87 @@ router.post('/add_org/:orgId', validateToken, async (req, res) => {
         
         res.json('Organization created!');
     }catch(err){
+        res.json(err);
+    }
+});
+
+router.get('/reset-password-auth/:email/:code', async (req, res) => {
+    const { email, code } = req.params;
+    try {
+        // check if otp exists for more than 24 hours, if yes, delete it
+        const otp = await OTP.findOne({
+            where: {
+                email: email,
+                code: code
+            }
+        });
+
+        if (otp) {
+            const otp_date = otp.createdAt;
+            const now = new Date();
+            const diff = now - otp_date;
+            const diffHours = Math.floor(diff / 1000 / 60 / 60);
+            if (diffHours > 24) {
+                await OTP.destroy({
+                    where: {
+                        email: email,
+                        code: code
+                    }
+                });
+                res.json({error:'OTP expired!'});
+            } else {
+                res.json('OTP verified!');
+            }
+        } else {
+            res.json({error:'OTP not found!'});
+        }
+    } catch (err) {
+        res.json(err);
+    }
+});
+
+router.post('/reset-password/:email/:code', async (req, res) => {
+    const { email, code } = req.params;
+    const { password } = req.body;
+    try {
+        const user = await Users.findOne({
+            where: {
+                email: email
+            }
+        });
+        if (user) {
+            const otp = await OTP.findOne({
+                where: {
+                    email: email,
+                    code: code
+                }
+            });
+
+            if (otp) {
+                //destroy otp
+                await OTP.destroy({
+                    where: {
+                        email: email,
+                        code: code
+                    }
+                });
+                await bcrypt.hash(password, 10).then((hash) => {
+                    Users.update({
+                        password: hash
+                    }, {
+                        where: {
+                            email: email
+                        }
+                    });
+                });
+                res.json('Password updated!');
+            } else {
+                res.json('Invalid code!');
+            }
+        } else {
+            res.json('Email not found!');
+        }
+    } catch (err) {
         res.json(err);
     }
 });
