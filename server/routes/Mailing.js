@@ -29,20 +29,23 @@ router.post('/send_test_email', async (req, res) => {
         from: process.env.NODEMAILER_USER,
         to: email,
         subject: 'Test Email',
-        // write an html template for the email
-        html: '<h1>Test Email</h1>'
+        text: 'This is a test email'
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
         if(error){
             console.log(error);
-            res.json({error: error});
+            res.json({error: `mailing error: ${error}`});
         }else{
             console.log('Email sent: ' + info.response);
             res.json({success: 'Email sent'});
         }
     });
 
+});
+
+router.post("/test", async (req, res) => {
+    res.json({success: "test"});
 });
 
 
