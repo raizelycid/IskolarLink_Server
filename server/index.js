@@ -67,7 +67,8 @@ const cosoaMembers = require('./routes/COSOA_Members');
 app.use('/cosoa_member', cosoaMembers)
 const landingPage = require('./routes/LandingPage');
 app.use('/landingpage', landingPage)
-
+const mailing = require('./routes/Mailing');
+app.use('/mailing', mailing)
 
 db.sequelize.sync().then(() => {
   app.listen(process.env.PORT || 3001, "0.0.0.0", () => {
