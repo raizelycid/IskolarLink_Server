@@ -232,4 +232,8 @@ router.get('/count_org_application', async (req, res) => {
 });
 
 
+// Merge all the pdf files of each organization and download it
+
+
+
 module.exports = router;
