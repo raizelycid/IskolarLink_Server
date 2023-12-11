@@ -69,6 +69,8 @@ const landingPage = require('./routes/LandingPage');
 app.use('/landingpage', landingPage)
 const mailing = require('./routes/Mailing');
 app.use('/mailing', mailing)
+const archive = require('./routes/Archive');
+app.use('/archive', archive)
 
 db.sequelize.sync().then(() => {
   app.listen(process.env.PORT || 3001, "0.0.0.0", () => {
