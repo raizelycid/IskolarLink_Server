@@ -1,26 +1,23 @@
 {
   "development": {
-    "username": "root",
-    "password": "e-a61g34aEb64-f6dHacbega2F3HGgCF",
-    "database": "railway",
-    "host": "roundhouse.proxy.rlwy.net",
-    "dialect": "mysql",
-    "port":"11542"
+    "username": "myedgelearning_iskolarlink",
+    "password": "KimLukeByronRenee@2023",
+    "database": "myedgelearning_iskolarlink",
+    "host": "157-245-49-42.cprapid.com",
+    "dialect": "mysql"
   },
   "test": {
-    "username": "root",
-    "password": "e-a61g34aEb64-f6dHacbega2F3HGgCF",
-    "database": "railway",
-    "host": "roundhouse.proxy.rlwy.net",
-    "dialect": "mysql",
-    "port":"11542"
+    "username": "myedgelearning_iskolarlink",
+    "password": "KimLukeByronRenee@2023",
+    "database": "myedgelearning_iskolarlink",
+    "host": "157-245-49-42.cprapid.com",
+    "dialect": "mysql"
   },
   "production": {
-    "username": "root",
-    "password": "e-a61g34aEb64-f6dHacbega2F3HGgCF",
-    "database": "railway",
-    "host": "roundhouse.proxy.rlwy.net",
-    "dialect": "mysql",
-    "port":"11542"
+    "username": "myedgelearning_iskolarlink",
+    "password": "KimLukeByronRenee@2023",
+    "database": "myedgelearning_iskolarlink",
+    "host": "157-245-49-42.cprapid.com",
+    "dialect": "mysql"
   }
 }
