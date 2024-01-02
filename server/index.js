@@ -10,7 +10,7 @@ require('dotenv').config();
 
 app.use(cors(
   {
-    origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app', 'http://iskolarlink.com'],
+    origin: ['http://localhost:3000', 'https://iskolarlink.netlify.app', 'https://iskolarlink.com'],
     credentials: true
   }
 ));

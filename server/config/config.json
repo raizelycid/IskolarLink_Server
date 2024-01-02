@@ -1,23 +1,23 @@
 {
   "development": {
-    "username": "myedgelearning_iskolarlink",
+    "username": "iskolarl_iskolarlink",
     "password": "KimLukeByronRenee@2023",
-    "database": "myedgelearning_iskolarlink",
-    "host": "157-245-49-42.cprapid.com",
+    "database": "iskolarl_iskolarlink",
+    "host": "server214.orangehost.com",
     "dialect": "mysql"
   },
   "test": {
-    "username": "myedgelearning_iskolarlink",
+    "username": "iskolarl_iskolarlink",
     "password": "KimLukeByronRenee@2023",
-    "database": "myedgelearning_iskolarlink",
-    "host": "157-245-49-42.cprapid.com",
+    "database": "iskolarl_iskolarlink",
+    "host": "server214.orangehost.com",
     "dialect": "mysql"
   },
   "production": {
-    "username": "myedgelearning_iskolarlink",
+    "username": "iskolarl_iskolarlink",
     "password": "KimLukeByronRenee@2023",
-    "database": "myedgelearning_iskolarlink",
-    "host": "157-245-49-42.cprapid.com",
+    "database": "iskolarl_iskolarlink",
+    "host": "server214.orangehost.com",
     "dialect": "mysql"
   }
 }
